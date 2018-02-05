@@ -6,3 +6,5 @@
 *.woff2
 
 \.idea/
+
+test_scripts\.py

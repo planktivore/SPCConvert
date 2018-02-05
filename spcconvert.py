@@ -15,6 +15,7 @@ import datetime
 import json
 import shutil
 import math
+import tarfile
 from multiprocessing import Pool, Process, Queue
 from threading import Thread
 import multiprocessing
@@ -487,6 +488,7 @@ if __name__ == '__main__':
         print ("Please input a dirtectory of data directories, aborting.")
     else:
         if len(sys.argv) <= 2:
+            data_path = sys.argv[1]
 
             # load the config file
             cfg = xmlsettings.XMLSettings(os.path.join(sys.path[0],'settings.xml'))
@@ -494,17 +496,25 @@ if __name__ == '__main__':
             combine_subdirs = cfg.get('MergeSubDirs',"False").lower() == "true"
             
             print ("Settings file: " + os.path.join(sys.path[0],'settings.xml'))
-            
+
+            # If file given try to unpack
+            if os.path.isfile(data_path):
+                extracted_path = data_path + "_unpacked"
+                with tarfile.open(data_path) as archive:
+                    archive.extractall(path=extracted_path)
+                data_path = extracted_path
+                to_clean = extracted_path
+
             # If given directory is a single data directory, just process it
-            if valid_image_dir(sys.argv[1]):
-                run(sys.argv[1],cfg)
+            if valid_image_dir(data_path):
+                run(data_path,cfg)
                 sys.exit(0)
 
             # Otherwise look for data directories in the given directory
 
             # List data directories and process each one
             # expect the directories to be in the unixtime format
-            directory_list = sorted(glob.glob(os.path.join(sys.argv[1],"[0-9]"*10)))
+            directory_list = sorted(glob.glob(os.path.join(data_path,"[0-9]"*10)))
 
             if len(directory_list) == 0:
                 print ("No data directories found.")
@@ -521,4 +531,3 @@ if __name__ == '__main__':
                             run(directory,cfg)
                     else:
                         run(directory,cfg)
-
