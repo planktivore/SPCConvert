@@ -14,10 +14,10 @@ The fastest way to get your system setup is to install Anaconda and then add the
 
 1. Install Anaconda for python 2.7 from https://anaconda.org/
 2. Open a terminal and install the required python modules:
-... `$ conda install -c menpo opencv3`
-... `$ conda install -c conda-forge pystache`
-3. change to the SPCconvert directory and run it
-... `$ python spcconvert.py [path_to_image_dir]`
+    * `$ conda install -c menpo opencv3`
+    * `$ conda install -c conda-forge pystache`
+3. Change to the SPCconvert directory and run it
+    * `$ python spcconvert.py [path_to_image_dir]`
 
 ### Requirements ###
 * python 2.7, numpy, scipy, skimage, opencv3, pystache
@@ -51,12 +51,12 @@ There are a few settings that need to be adjusted to use with a different camera
 
 1. BayerPattern: This needs to match your camera, for example BG is used for the SPC, SPCP cameras and RG is used for the SPC-BIG, UW, USC cameras
 2. PixelSize: This is pixel size of pixels in object space in um/pixel of the given camera/lens combination, it is converted to mm/pixel in the code
-... SPC: 7.38 um/pixel (Sony ICX814, 3.69 um pixels with 0.5x objective)
-... SPCP: 0.62 um/pixel (Sony ICX834, 3.1 um pixels with 5x objective)
-... SPC2: 7.38 um/pixel (Sony ICX814, 3.69 um pixels with 0.5x objective)
-... SPCP2: 0.738 um/pixel (Sony ICX814, 3.69 um pixels with 5x objective)
-... SPC-PWSSC, NOAA: 22.6 um/pixel (Sony ICX834, 3.1 um pixels with 0.137x objective)
-... SPC-BIG, UW, USC: 25.18 um/pixel (Sony IMX253, 3.45 um pixels with 0.137x objective)
+    * SPC: 7.38 um/pixel (Sony ICX814, 3.69 um pixels with 0.5x objective)
+    * SPCP: 0.62 um/pixel (Sony ICX834, 3.1 um pixels with 5x objective)
+    * SPC2: 7.38 um/pixel (Sony ICX814, 3.69 um pixels with 0.5x objective)
+    * SPCP2: 0.738 um/pixel (Sony ICX814, 3.69 um pixels with 5x objective)
+    * SPC-PWSSC, NOAA: 22.6 um/pixel (Sony ICX834, 3.1 um pixels with 0.137x objective)
+    * SPC-BIG, UW, USC: 25.18 um/pixel (Sony IMX253, 3.45 um pixels with 0.137x objective)
 
 ### Contribution guidelines ###
 
