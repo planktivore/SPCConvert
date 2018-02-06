@@ -1,0 +1,9 @@
+{
+    "MergeSubDirs": false,
+    "PixelSize": 25.0,
+    "ImagePerDir": 1000,
+    "ObjectsPerRoi": 5,
+    "EdgeThreshold": 1.75,
+    "MinObjectArea": 100,
+    "Deconvolve": true 
+}
