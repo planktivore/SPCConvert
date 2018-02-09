@@ -3,3 +3,4 @@ scipy>=1.0.0
 opencv-python>=3.4.0
 scikit-image>=0.13
 pystache>=0.5.4
+pandas>=0.22.0

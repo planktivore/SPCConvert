@@ -26,6 +26,8 @@ import pystache
 import numpy as np
 import xmlsettings
 from scipy import stats
+import pandas
+from collections import OrderedDict
 
 def lmap(f, l):
     return list(map(f,l))
@@ -169,7 +171,7 @@ def run(data_path,cfg):
             image_list += glob.glob(os.path.join(sub_directory,"*.tif"))
     else:
         image_list += glob.glob(os.path.join(data_path,"*.tif"))
-    
+
     image_list = sorted(image_list)
 
     # skip if no images were found
@@ -269,7 +271,7 @@ def run(data_path,cfg):
                     cv2.imwrite(os.path.join(output_path+".png"),output['features']['image'])
                 
                 cv2.imwrite(os.path.join(output_path+"_binary.png"),output['features']['binary'])
-            
+
             counter = counter + 1
         except:
             time.sleep(0.05)
@@ -290,7 +292,7 @@ def run(data_path,cfg):
 
     # image resolution in mm/pixel
     image_res = cfg.get('PixelSize',22.1)/1000;
-    
+
     #print "Image resolution is set to: " + str(image_res) + " mm/pixel."
 
     # Get arrays from the dict of features
@@ -305,13 +307,26 @@ def run(data_path,cfg):
     elapsed_seconds = unixtime - np.min(unixtime)
     file_size = np.array(lmap(itemgetter('file_size'),entry_list))/1000.0
 
-    #print unixtime
-    
+    # Gather features scaled by the pixel size
+    entry_list_scaled = []
+    for i, e in enumerate(entry_list):
+        data = OrderedDict([
+            ('url', e['url']),
+            ('timestamp', e['timestring']),
+            ('file_size', file_size[i]),
+            ('aspect_ratio', aspect_ratio[i]),
+            ('maj_axis_len' , maj_len[i]),
+            ('min_axis_len', min_len[i]),
+            ('orientation', orientation[i]),
+            ('area', area[i]),
+            ])
+        entry_list_scaled.append(data)
+
     total_seconds = max(elapsed_seconds)
     print ("Total seconds recorded: " + str(total_seconds))
     if total_seconds < 1:
         total_seconds = 1
-        
+
     print ("\nComputing histograms...")
 
     # Compute histograms
@@ -329,7 +344,7 @@ def run(data_path,cfg):
     hist = np.histogram(orientation,nbins)
     all_hists['orientation'] = json.dumps(lzip(hist[1].tolist(),hist[0].tolist()))
     hist = np.histogram(file_size,nbins)
-    
+
     print ("\nComputing stats...")
 
     all_hists['file_size'] = json.dumps(lzip(hist[1].tolist(),hist[0].tolist()))
@@ -343,6 +358,11 @@ def run(data_path,cfg):
     all_stats['orientation'] = stats.describe(orientation)
     all_stats['file_size'] = stats.describe(file_size)
 
+
+    print ("Exporting spreadsheet results...")
+
+    df = pandas.DataFrame(entry_list_scaled)
+    df.to_csv(os.path.join(subdir,'features.tsv'), index=False, sep='\t')
 
     print ("Building web app...")
 
