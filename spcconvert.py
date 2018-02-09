@@ -26,7 +26,11 @@ import numpy as np
 import xmlsettings
 from scipy import stats
 
+def lmap(f, l):
+    return list(map(f,l))
 
+def lzip(a,b):
+    return list(zip(a,b))
 
 flow_frames = True
 
@@ -69,7 +73,7 @@ def process_image(bundle):
             
     # Range check the timestamp
     if timestamp < 100000:
-        print "" + filename + " strange timestamp."
+        print ("" + filename + " strange timestamp.")
         #timestamp = os.path.getctime(image_path)
         output = {}
         return output
@@ -99,7 +103,7 @@ def process_image(bundle):
         
     # Range check the timestamp
     if timestamp < 100000 or timestamp > time.time():
-        print "" + filename + " strange timestamp."
+        print ("" + filename + " strange timestamp.")
         #timestamp = os.path.getctime(image_path)
         output = {}
         return output
@@ -148,19 +152,19 @@ def chunks(l, n):
 # Process a directory of images
 def run(data_path,cfg):
 
-    print "Running SPC image conversion..."
+    print ("Running SPC image conversion...")
 
     # get the base name of the directory
     base_dir_name = os.path.basename(os.path.abspath(data_path))
 
     # list the directory for tif images
-    print "Listing directory " + base_dir_name + "..."
+    print ("Listing directory " + base_dir_name + "...")
 
     image_list = []
     if cfg.get('MergeSubDirs',"false").lower() == "true":
         sub_directory_list = sorted(glob.glob(os.path.join(data_path,"[0-9]"*10)))
         for sub_directory in sub_directory_list:
-            print "Listing sub directory " + sub_directory + "..."
+            print ("Listing sub directory " + sub_directory + "...")
             image_list += glob.glob(os.path.join(sub_directory,"*.tif"))
     else:
         image_list += glob.glob(os.path.join(data_path,"*.tif"))
@@ -169,7 +173,7 @@ def run(data_path,cfg):
 
     # skip if no images were found
     if len(image_list) == 0:
-        print "No images were found. skipping this directory."
+        print ("No images were found. skipping this directory.")
         return
 
     # Get the total number of images in the directory
@@ -183,7 +187,7 @@ def run(data_path,cfg):
     if not os.path.exists(image_dir):
         os.makedirs(image_dir)
 
-    print "Starting image conversion and page generation..."
+    print ("Starting image conversion and page generation...")
 
     # loop over the images and do the processing
     images_per_dir = cfg.get('ImagesPerDir',2000)
@@ -193,7 +197,7 @@ def run(data_path,cfg):
     if cfg.get("BayerPattern").lower() == "bg":
         bayer_conv = cv2.COLOR_BAYER_BG2RGB
 
-    print "Loading images...\r",
+    print ("Loading images...\n",)
     bundle_queue = Queue()
     for index, image in enumerate(image_list):
 
@@ -215,7 +219,7 @@ def run(data_path,cfg):
         bundle['total_images'] = total_images
 
         bundle_queue.put(bundle)
-        print "Loading images... (" + str(index) + " of " + str(total_images) + ")\r",
+        print ("Loading images... (" + str(index) + " of " + str(total_images) + ")\n"),
 
         #if index > 2000:
         #    total_images = index
@@ -236,13 +240,13 @@ def run(data_path,cfg):
         processes.append(p)
 
     # Monitor processing of the images and save processed images to disk as they become available
-    print "\nProcessing Images...\r",
+    print ("\nProcessing Images...\r"),
     counter = 0
     entry_list = []
     use_jpeg = use_jpeg = cfg.get("UseJpeg").lower() == 'true'
     raw_color = cfg.get("SaveRawColor").lower() == 'true'
     while True:
-        print "Processing and saving images... (" + str(counter).zfill(5) + " of " + str(total_images).zfill(5) + ")\r",
+        print ("Processing and saving images... (" + str(counter).zfill(5) + " of " + str(total_images).zfill(5) + ")\r",)
 
         if counter >= total_images:
             break
@@ -276,7 +280,7 @@ def run(data_path,cfg):
     for p in processes:
         p.terminate()
 
-    print "\nPostprocessing..."
+    print ("\nPostprocessing...")
 
     # sort the entries by height and build the output
     entry_list.sort(key=itemgetter('maj_axis_len'),reverse=True)
@@ -291,43 +295,43 @@ def run(data_path,cfg):
     # Get arrays from the dict of features
     total_images = len(entry_list)
     nbins = int(np.ceil(np.sqrt(total_images)))
-    maj_len = np.array(map(itemgetter('maj_axis_len'),entry_list))*image_res
-    min_len = np.array(map(itemgetter('min_axis_len'),entry_list))*image_res
-    aspect_ratio = np.array(map(itemgetter('aspect_ratio'),entry_list))
-    orientation = np.array(map(itemgetter('orientation'),entry_list))
-    area = np.array(map(itemgetter('area'),entry_list))*image_res*image_res
-    unixtime = np.array(map(itemgetter('timestamp'),entry_list))
+    maj_len = np.array(lmap(itemgetter('maj_axis_len'),entry_list))*image_res
+    min_len = np.array(lmap(itemgetter('min_axis_len'),entry_list))*image_res
+    aspect_ratio = np.array(lmap(itemgetter('aspect_ratio'),entry_list))
+    orientation = np.array(lmap(itemgetter('orientation'),entry_list))
+    area = np.array(lmap(itemgetter('area'),entry_list))*image_res*image_res
+    unixtime = np.array(lmap(itemgetter('timestamp'),entry_list))
     elapsed_seconds = unixtime - np.min(unixtime)
-    file_size = np.array(map(itemgetter('file_size'),entry_list))/1000.0
+    file_size = np.array(lmap(itemgetter('file_size'),entry_list))/1000.0
 
     #print unixtime
     
     total_seconds = max(elapsed_seconds)
-    print "Total seconds recorded: " + str(total_seconds)
+    print ("Total seconds recorded: " + str(total_seconds))
     if total_seconds < 1:
         total_seconds = 1
         
-    print "\nComputing histograms..."
+    print ("\nComputing histograms...")
 
     # Compute histograms
     all_hists = {}
     hist = np.histogram(area,nbins)
-    all_hists['area'] = json.dumps(zip(hist[1].tolist(),hist[0].tolist()))
+    all_hists['area'] = json.dumps(lzip(hist[1].tolist(),hist[0].tolist()))
     hist = np.histogram(maj_len,nbins)
-    all_hists['major_axis_length'] = json.dumps(zip(hist[1].tolist(),hist[0].tolist()))
+    all_hists['major_axis_length'] = json.dumps(lzip(hist[1].tolist(),hist[0].tolist()))
     hist = np.histogram(min_len,nbins)
-    all_hists['minor_axis_length'] = json.dumps(zip(hist[1].tolist(),hist[0].tolist()))
+    all_hists['minor_axis_length'] = json.dumps(lzip(hist[1].tolist(),hist[0].tolist()))
     hist = np.histogram(aspect_ratio,nbins)
-    all_hists['aspect_ratio'] = json.dumps(zip(hist[1].tolist(),hist[0].tolist()))
+    all_hists['aspect_ratio'] = json.dumps(lzip(hist[1].tolist(),hist[0].tolist()))
     hist = np.histogram(elapsed_seconds,np.uint32(total_seconds))
-    all_hists['elapsed_seconds'] = json.dumps(zip(hist[1].tolist(),hist[0].tolist()))
+    all_hists['elapsed_seconds'] = json.dumps(lzip(hist[1].tolist(),hist[0].tolist()))
     hist = np.histogram(orientation,nbins)
-    all_hists['orientation'] = json.dumps(zip(hist[1].tolist(),hist[0].tolist()))
+    all_hists['orientation'] = json.dumps(lzip(hist[1].tolist(),hist[0].tolist()))
     hist = np.histogram(file_size,nbins)
     
-    print "\nComputing stats..."
+    print ("\nComputing stats...")
 
-    all_hists['file_size'] = json.dumps(zip(hist[1].tolist(),hist[0].tolist()))
+    all_hists['file_size'] = json.dumps(lzip(hist[1].tolist(),hist[0].tolist()))
     # Compute general stats from features
     all_stats = {}
     all_stats['area'] = stats.describe(area)
@@ -339,7 +343,7 @@ def run(data_path,cfg):
     all_stats['file_size'] = stats.describe(file_size)
 
 
-    print "Building web app..."
+    print ("Building web app...")
 
     # Load html template for rendering
     template = ""
@@ -368,7 +372,7 @@ def run(data_path,cfg):
 
         # definie the charts to display from the histogram data
     charts = []
-    for chart_name, data_values in all_hists.iteritems():
+    for chart_name, data_values in all_hists.items():
         chart = {}
         chart['source'] = 'js/' + chart_name + '.js'
         chart['name'] = chart_name
@@ -412,7 +416,7 @@ def run(data_path,cfg):
         shutil.rmtree(os.path.join(subdir,"js"),ignore_errors=True)
         shutil.copytree("app/js",os.path.join(subdir,"js"))
     except:
-        print "Error copying supporting files for html."
+        print ("Error copying supporting files for html.")
 
     # Load roistore.js database for rendering
     template = ""
@@ -429,7 +433,7 @@ def run(data_path,cfg):
     with open(os.path.join(subdir,'js','database.js'),"w") as fconv:
         fconv.write(page)
 
-    print "Done."
+    print ("Done.")
     
 def valid_image_dir(test_path):
 
@@ -480,7 +484,7 @@ if __name__ == '__main__':
     multiprocessing.freeze_support()
 
     if len(sys.argv) <= 1:
-        print "Please input a dirtectory of data directories, aborting."
+        print ("Please input a dirtectory of data directories, aborting.")
     else:
         if len(sys.argv) <= 2:
 
@@ -489,7 +493,7 @@ if __name__ == '__main__':
 
             combine_subdirs = cfg.get('MergeSubDirs',"False").lower() == "true"
             
-            print "Settings file: " + os.path.join(sys.path[0],'settings.xml')
+            print ("Settings file: " + os.path.join(sys.path[0],'settings.xml'))
             
             # If given directory is a single data directory, just process it
             if valid_image_dir(sys.argv[1]):
@@ -503,13 +507,13 @@ if __name__ == '__main__':
             directory_list = sorted(glob.glob(os.path.join(sys.argv[1],"[0-9]"*10)))
 
             if len(directory_list) == 0:
-                print "No data directories found."
+                print ("No data directories found.")
                 sys.exit(0)
                 
 
 
             # Process the data directories in order
-            print 'Processing each data directory...'
+            print ('Processing each data directory...')
             for directory in directory_list:
                 if os.path.isdir(directory):
                     if not combine_subdirs:
