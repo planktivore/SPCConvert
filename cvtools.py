@@ -103,7 +103,9 @@ def convert_to_8bit(img,auto_scale=True):
 
 # extract simple features and create a binary representation of the image
 def quick_features(img,save_to_disk=False,abs_path='',file_prefix='',cfg = []):
-
+    """
+    :param img: 8-bit array
+    """
     # Pull out some settings from cfg if available
     if cfg:
         min_obj_area = cfg.get('MinObjectArea',100)
