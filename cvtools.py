@@ -101,6 +101,10 @@ def convert_to_8bit(img,auto_scale=True):
 
     return img_8bit
 
+
+def intensity_features(obj_maks, img):
+    return {}
+
 # extract simple features and create a binary representation of the image
 def quick_features(img,save_to_disk=False,abs_path='',file_prefix='',cfg = []):
     """
@@ -165,6 +169,7 @@ def quick_features(img,save_to_disk=False,abs_path='',file_prefix='',cfg = []):
 
         # Init mask with the largest area object in the roi
         bw_img = (label_img)== props[0].label
+        bw_img_all = bw_img.copy()
         
         base_area = props[0].area
     
@@ -176,34 +181,39 @@ def quick_features(img,save_to_disk=False,abs_path='',file_prefix='',cfg = []):
         avg_min = 0.0
         avg_or = 0.0
         avg_count = 0
-        
+
         if len(props) > objs_per_roi:
             n_objs = objs_per_roi
         else:
             n_objs = len(props)
-        
+
         for f in range(0,n_objs):
-        
+
             if props[f].area > min_obj_area:
-                bw_img = bw_img + ((label_img)== props[f].label)
+                bw_img_all = bw_img_all + ((label_img)== props[f].label)
                 avg_count = avg_count + 1
-            
+
             if f >= objs_per_roi:
                 break
-        
+
         # Take the largest object area as the roi area
         # no average
         avg_area = props[0].area
         avg_maj = props[0].major_axis_length
         avg_min = props[0].minor_axis_length
         avg_or = props[0].orientation
+
+        # Calculate only for largest
+        features_intensity = intensity_features(img, bw_img)
+        for k, v in features_intensity.items():
+            features[k] = v
         
         
         # Check for clipped image
-        if np.max(bw_img) == 0:
-            bw = bw_img
+        if np.max(bw_img_all) == 0:
+            bw = bw_img_all
         else:
-            bw = bw_img/np.max(bw_img)
+            bw = bw_img_all/np.max(bw_img_all)
             
         clip_frac = float(np.sum(bw[:,1]) +
                 np.sum(bw[:,-2]) +
@@ -238,7 +248,7 @@ def quick_features(img,save_to_disk=False,abs_path='',file_prefix='',cfg = []):
     # reduction of chromatic aberration
 
     # mask the raw image with smoothed foreground mask
-    blurd_bw_img = gaussian(bw_img,3)
+    blurd_bw_img = gaussian(bw_img_all,3)
     img[:,:,0] = img[:,:,0]*blurd_bw_img
     img[:,:,1] = img[:,:,1]*blurd_bw_img
     img[:,:,2] = img[:,:,2]*blurd_bw_img
@@ -289,7 +299,7 @@ def quick_features(img,save_to_disk=False,abs_path='',file_prefix='',cfg = []):
         img = np.uint8(255*img/np.max(img))
 
     features['image'] = img
-    features['binary'] = 255*bw_img
+    features['binary'] = 255*bw_img_all
         
     # Save the binary image and also color image if requested
     if save_to_disk:
