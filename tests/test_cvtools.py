@@ -34,6 +34,12 @@ class TestFeatures(unittest.TestCase):
         self.assertAlmostEqual(0.068, features['orientation'], 2)
         self.assertEqual(0.01, features['clipped_fraction'])
 
+    def test_intensity_object(self):
+        red_blue_blob = self.red_blob.copy()
+        red_blue_blob[5:8, 2:7, 1] = 20
+        features = quick_features(red_blue_blob)
+        self.fail("TODO - test calculated values")
+
     def test_raw_object_regression(self):
         raw_8bit = convert_to_8bit(self.raw_image)
         features = quick_features(raw_8bit)

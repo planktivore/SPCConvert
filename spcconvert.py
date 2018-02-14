@@ -123,6 +123,14 @@ def process_image(bundle):
     entry['area'] = features['area']
     entry['clipped_fraction'] = features['clipped_fraction']
     entry['orientation'] = features['orientation']*180/math.pi
+    entry['eccentricity'] = features['eccentricity']
+    entry['solidity'] = features['solidity']
+
+    entry['intensity_gray'] = features['intensity_gray']
+    entry['intensity_red'] = features['intensity_red']
+    entry['intensity_green'] = features['intensity_green']
+    entry['intensity_blue'] = features['intensity_blue']
+
     entry['timestring'] = timestring
     entry['timestamp'] = timestamp
     entry['width'] = img_c_8bit.shape[1]
@@ -310,7 +318,7 @@ def run(data_path,cfg):
     # Gather features scaled by the pixel size
     entry_list_scaled = []
     for i, e in enumerate(entry_list):
-        data = OrderedDict([
+        data_list = [
             ('url', e['url']),
             ('timestamp', e['timestring']),
             ('file_size', file_size[i]),
@@ -318,8 +326,17 @@ def run(data_path,cfg):
             ('maj_axis_len' , maj_len[i]),
             ('min_axis_len', min_len[i]),
             ('orientation', orientation[i]),
+            ('eccentricity', e['eccentricity']),
+            ('solidity', e['solidity']),
             ('area', area[i]),
-            ])
+            ]
+
+        for intensity_group in ['intensity_gray','intensity_red', 'intensity_green', 'intensity_blue']:
+            if intensity_group in e:
+                for k, v in e[intensity_group].items():
+                    data_list.append((intensity_group + "_" + k, v))
+
+        data = OrderedDict(data_list)
         entry_list_scaled.append(data)
 
     total_seconds = max(elapsed_seconds)
