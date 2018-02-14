@@ -16,12 +16,15 @@ The fastest way to get your system setup is to install Anaconda and then add the
 2. Open a terminal and install the required python modules:
     * `$ conda install -c menpo opencv3`
     * `$ conda install -c conda-forge pystache`
+    * `$ conda install -c conda-forge pandas`
 3. Change to the SPCconvert directory and run it
     * `$ python spcconvert.py [path_to_image_dir]`
 
 ### Requirements ###
-* python 2.7, numpy, scipy, skimage, opencv3, pystache
+* python 2.7, numpy, scipy, skimage, opencv3, pystache, pandas
 * Tested on mac, and windows
+
+The requirements are also listed in requirements.txt file.
 
 ### settings.xml ###
 
@@ -44,6 +47,8 @@ processes up to NCPU-1. The processing consists of:
 
 The results are then saved into a new directory structure and a web app is build from the data using pystache (mustache) templates
 and some javascript and html files stored in the app directory.
+
+Additionally spreadsheet (features.tsv) is created with features of every detected object. These can be used for further analyses of the observed entities. 
 
 ### Configuring for a Specific Camera ###
 
