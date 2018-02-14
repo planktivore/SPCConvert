@@ -102,8 +102,22 @@ def convert_to_8bit(img,auto_scale=True):
     return img_8bit
 
 
-def intensity_features(obj_maks, img):
-    return {}
+def intensity_features(img, obj_mask):
+    res = {}
+
+    # assume that obj_mask contains one connected component
+    prop = measure.regionprops(obj_mask.astype(np.uint8), img)[0]
+    res["mean_intensity"] = prop.mean_intensity
+    res["median_intensity"] = np.median(prop.intensity_image[prop.image])
+
+    # invariant_intensity_moments = prop.weighted_moments_normalized
+    # StdIntensity ^
+    # MeanIntensityEdge
+    # MassDisplacement
+    # LowerQuartileIntensity
+    # UpperQuartileIntensity
+    # MADIntensity?
+    return res
 
 # extract simple features and create a binary representation of the image
 def quick_features(img,save_to_disk=False,abs_path='',file_prefix='',cfg = []):
@@ -128,7 +142,7 @@ def quick_features(img,save_to_disk=False,abs_path='',file_prefix='',cfg = []):
 
     # Define an empty dictionary to hold all features
     features = {}
-    
+
     features['rawcolor'] = np.copy(img)
     # compute features from gray image
     gray = np.uint8(np.mean(img,2))
@@ -159,20 +173,20 @@ def quick_features(img,save_to_disk=False,abs_path='',file_prefix='',cfg = []):
     # Compute morphological descriptors
     label_img = morphology.label(bw_img,neighbors=8,background=0)
     props = measure.regionprops(label_img,gray)
-    
+
     # clear bw_img
     bw_img = 0*bw_img
-    
-    props = sorted(props, reverse=True, key=lambda k: k.area) 
+
+    props = sorted(props, reverse=True, key=lambda k: k.area)
 
     if len(props) > 0:
 
         # Init mask with the largest area object in the roi
         bw_img = (label_img)== props[0].label
         bw_img_all = bw_img.copy()
-        
+
         base_area = props[0].area
-    
+
         # use only the features from the object with the largest area
         max_area = 0
         max_area_ind = 0
@@ -202,19 +216,32 @@ def quick_features(img,save_to_disk=False,abs_path='',file_prefix='',cfg = []):
         avg_maj = props[0].major_axis_length
         avg_min = props[0].minor_axis_length
         avg_or = props[0].orientation
+        avg_eccentricity = props[0].eccentricity
+        avg_solidity = props[0].solidity
 
         # Calculate only for largest
-        features_intensity = intensity_features(img, bw_img)
+        features_intensity = intensity_features(gray, bw_img)
         for k, v in features_intensity.items():
-            features[k] = v
-        
-        
+            features["gray_" + k] = v
+
+        features_intensity = intensity_features(img[::, ::, 0], bw_img)
+        for k, v in features_intensity.items():
+            features["red_" + k] = v
+
+        features_intensity = intensity_features(img[::, ::, 1], bw_img)
+        for k, v in features_intensity.items():
+            features["green_" + k] = v
+
+        features_intensity = intensity_features(img[::, ::, 2], bw_img)
+        for k, v in features_intensity.items():
+            features["blue_" + k] = v
+
         # Check for clipped image
         if np.max(bw_img_all) == 0:
             bw = bw_img_all
         else:
             bw = bw_img_all/np.max(bw_img_all)
-            
+
         clip_frac = float(np.sum(bw[:,1]) +
                 np.sum(bw[:,-2]) +
                 np.sum(bw[1,:]) +
@@ -230,7 +257,11 @@ def quick_features(img,save_to_disk=False,abs_path='',file_prefix='',cfg = []):
         else:
             features['aspect_ratio'] = avg_min/avg_maj
         features['orientation'] = avg_or
-        
+        features['eccentricity'] = avg_eccentricity
+        features['solidity'] = avg_solidity
+        #
+        #
+
         # print "Foreground Objects: " + str(avg_count)
 
     else:
@@ -243,7 +274,9 @@ def quick_features(img,save_to_disk=False,abs_path='',file_prefix='',cfg = []):
         features['major_axis_length'] = 0.0
         features['aspect_ratio'] = 1
         features['orientation'] = 0.0
-    
+        features['eccentricity'] = 0
+        features['solidity'] = 0
+
     # Masked background with Gaussian smoothing, image sharpening, and
     # reduction of chromatic aberration
 
@@ -257,15 +290,15 @@ def quick_features(img,save_to_disk=False,abs_path='',file_prefix='',cfg = []):
     psf = make_gaussian(5, 3, center=None)
 
     # sharpen each color channel and then reconbine
-    
-    
+
+
     if np.max(img) == 0:
         img = np.float32(img)
     else:
         img = np.float32(img)/np.max(img)
-    
+
     if deconv:
-            
+
         img[img == 0] = 0.0001
         img[:,:,0] = restoration.richardson_lucy(img[:,:,0], psf, 7)
         img[:,:,1] = restoration.richardson_lucy(img[:,:,1], psf, 7)
@@ -292,7 +325,7 @@ def quick_features(img,save_to_disk=False,abs_path='',file_prefix='',cfg = []):
 
     # Rescale image to uint8 0-255
     img[img < 0] = 0
-    
+
     if np.max(img) == 0:
         img = np.uint8(255*img)
     else:
@@ -300,7 +333,7 @@ def quick_features(img,save_to_disk=False,abs_path='',file_prefix='',cfg = []):
 
     features['image'] = img
     features['binary'] = 255*bw_img_all
-        
+
     # Save the binary image and also color image if requested
     if save_to_disk:
 
@@ -319,7 +352,7 @@ def quick_features(img,save_to_disk=False,abs_path='',file_prefix='',cfg = []):
                 cv2.imwrite(os.path.join(abs_path,file_prefix+"_rawcolor.png"),features['rawcolor'])
             # Save the processed image and binary mask
             cv2.imwrite(os.path.join(abs_path,file_prefix+".png"),features['image'])
-        
+
         # Binary should also be saved png
         cv2.imwrite(os.path.join(abs_path,file_prefix+"_binary.png"),features['binary'])
 

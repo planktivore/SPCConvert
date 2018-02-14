@@ -38,7 +38,7 @@ class TestFeatures(unittest.TestCase):
         red_blue_blob = self.red_blob.copy()
         red_blue_blob[5:8, 2:7, 1] = 20
         features = quick_features(red_blue_blob)
-        self.fail("TODO")
+        self.fail("TODO - test calculated values")
 
     def test_raw_object_regression(self):
         raw_8bit = convert_to_8bit(self.raw_image)
