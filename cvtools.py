@@ -219,22 +219,18 @@ def quick_features(img,save_to_disk=False,abs_path='',file_prefix='',cfg = []):
         avg_eccentricity = props[0].eccentricity
         avg_solidity = props[0].solidity
 
-        # Calculate only for largest
+        # Calculate intensity features only for largest
         features_intensity = intensity_features(gray, bw_img)
-        for k, v in features_intensity.items():
-            features["gray_" + k] = v
+        features['intensity_gray'] = features_intensity
 
         features_intensity = intensity_features(img[::, ::, 0], bw_img)
-        for k, v in features_intensity.items():
-            features["red_" + k] = v
+        features['intensity_red'] = features_intensity
 
         features_intensity = intensity_features(img[::, ::, 1], bw_img)
-        for k, v in features_intensity.items():
-            features["green_" + k] = v
+        features['intensity_green'] = features_intensity
 
         features_intensity = intensity_features(img[::, ::, 2], bw_img)
-        for k, v in features_intensity.items():
-            features["blue_" + k] = v
+        features['intensity_blue'] = features_intensity
 
         # Check for clipped image
         if np.max(bw_img_all) == 0:
