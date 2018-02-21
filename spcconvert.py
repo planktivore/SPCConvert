@@ -125,6 +125,7 @@ def process_image(bundle):
     entry['orientation'] = features['orientation']*180/math.pi
     entry['eccentricity'] = features['eccentricity']
     entry['solidity'] = features['solidity']
+    entry['estimated_volume'] = features['estimated_volume']
 
     entry['intensity_gray'] = features['intensity_gray']
     entry['intensity_red'] = features['intensity_red']
@@ -328,6 +329,7 @@ def run(data_path,cfg):
             ('orientation', orientation[i]),
             ('eccentricity', e['eccentricity']),
             ('solidity', e['solidity']),
+            ('estimated_volume', e['estimated_volume']),
             ('area', area[i]),
             ]
 

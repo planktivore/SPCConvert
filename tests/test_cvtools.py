@@ -38,6 +38,8 @@ class TestFeatures(unittest.TestCase):
         red_blue_blob = self.red_blob.copy()
         red_blue_blob[5:8, 2:7, 1] = 20
         features = quick_features(red_blue_blob)
+
+
         self.fail("TODO - test calculated values")
 
     def test_raw_object_regression(self):
@@ -48,5 +50,13 @@ class TestFeatures(unittest.TestCase):
 
         # pickle.dump(features, open("expected/case_1_blob_qf.pickle", "wb"))
         expect_rep = sorted(expected_features)
+
+        # ignore added features
+        del features['solidity']
+        del features['estimated_volume']
+        del features['eccentricity']
+        for k in [k for k in features.keys() if 'intensity' in k]:
+            del features[k]
+
         features_rep = sorted(features)
         self.assertEqual(str(expect_rep), str(features_rep))

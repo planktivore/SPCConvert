@@ -255,6 +255,7 @@ def quick_features(img,save_to_disk=False,abs_path='',file_prefix='',cfg = []):
         features['orientation'] = avg_or
         features['eccentricity'] = avg_eccentricity
         features['solidity'] = avg_solidity
+        features['estimated_volume'] = 4.0 / 3 * pi * avg_maj * avg_min * avg_min
         #
         #
 
@@ -272,6 +273,7 @@ def quick_features(img,save_to_disk=False,abs_path='',file_prefix='',cfg = []):
         features['orientation'] = 0.0
         features['eccentricity'] = 0
         features['solidity'] = 0
+        features['estimated_volume'] = 0
 
     # Masked background with Gaussian smoothing, image sharpening, and
     # reduction of chromatic aberration
