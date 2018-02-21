@@ -20,7 +20,7 @@ from skimage import transform
 from skimage.feature import register_translation
 from skimage.filters import threshold_otsu, scharr, gaussian
 import numpy as np
-from scipy import ndimage
+from scipy import ndimage, spatial
 import xmlsettings
 
 def make_gaussian(size, fwhm = 3, center=None):
@@ -108,15 +108,29 @@ def intensity_features(img, obj_mask):
     # assume that obj_mask contains one connected component
     prop = measure.regionprops(obj_mask.astype(np.uint8), img)[0]
     res["mean_intensity"] = prop.mean_intensity
-    res["median_intensity"] = np.median(prop.intensity_image[prop.image])
 
-    # invariant_intensity_moments = prop.weighted_moments_normalized
-    # StdIntensity ^
-    # MeanIntensityEdge
-    # MassDisplacement
-    # LowerQuartileIntensity
-    # UpperQuartileIntensity
-    # MADIntensity?
+    intensities = prop.intensity_image[prop.image]
+    res["median_intensity"] = np.median(intensities)
+    res["std_intensity"] = np.std(intensities)
+    res["perc_25_intensity"] = np.percentile(intensities, 25)
+    res["perc_75_intensity"] = np.percentile(intensities, 75)
+
+    centroid = np.array(prop.centroid)
+    weighted_centroid = np.array(prop.weighted_centroid)
+    displacement = weighted_centroid - centroid
+    displacement_image = np.linalg.norm(displacement / img.shape)
+    displacement_minors = np.linalg.norm(displacement) / prop.minor_axis_length
+    res['mass_displace_in_images'] = displacement_image
+    res['mass_displace_in_minors'] = displacement_minors
+
+    res["moment_hu_1"] = prop.weighted_moments_hu[0]
+    res["moment_hu_2"] = prop.weighted_moments_hu[1]
+    res["moment_hu_3"] = prop.weighted_moments_hu[2]
+    res["moment_hu_4"] = prop.weighted_moments_hu[3]
+    res["moment_hu_5"] = prop.weighted_moments_hu[4]
+    res["moment_hu_6"] = prop.weighted_moments_hu[5]
+    res["moment_hu_7"] = prop.weighted_moments_hu[6]
+
     return res
 
 # extract simple features and create a binary representation of the image

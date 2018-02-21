@@ -4,8 +4,9 @@ from collections import OrderedDict
 
 import cv2
 import numpy as np
+import scipy.spatial.distance as distance
 
-from cvtools import quick_features, import_image, convert_to_8bit
+from cvtools import quick_features, import_image, convert_to_8bit, intensity_features
 
 
 class TestFeatures(unittest.TestCase):
@@ -38,9 +39,38 @@ class TestFeatures(unittest.TestCase):
         red_blue_blob = self.red_blob.copy()
         red_blue_blob[5:8, 2:7, 1] = 20
         features = quick_features(red_blue_blob)
-
+        # test only that they are calculated for all colours
+        # and added to results
 
         self.fail("TODO - test calculated values")
+
+    def test_intensity_measures_rect(self):
+        # std, quartile intensity
+        square = np.zeros((20, 20), dtype=np.uint8)
+        square[5:10, 10:16] = 5  # 5 x 6 square (30 pixels)
+        square[10:11, 10:16] = 20  # one stripe is stronger (6 pixels)
+        features = intensity_features(square, square > 0)
+        self.assertEqual((5 * 30 + 20 * 6) / 36.0, features['mean_intensity'])
+        self.assertEqual(5, features['median_intensity'])
+        self.assertAlmostEqual(5.59017, features['std_intensity'], 3)
+        self.assertAlmostEqual(5, features['perc_25_intensity'], 3)
+        self.assertAlmostEqual(5, features['perc_75_intensity'], 3)
+
+        centroid = np.array([7.5, 12.5])
+        weighted_x = 12.5
+        weighted_y = (7 * 150 + 10 * 120) / 270.0
+        weighted = np.array([weighted_y, weighted_x])
+
+        expected_displacement = distance.euclidean(weighted, centroid)
+        expected_displacement_image = expected_displacement / 20.0
+        expected_displacement_relative = expected_displacement / 6.8313
+        self.assertAlmostEqual(expected_displacement_image, features['mass_displace_in_images'], 3)
+        self.assertAlmostEqual(expected_displacement_relative, features['mass_displace_in_minors'], 3)
+
+    def test_intensity_measures_circle(self):
+        # test with circle
+        # circle will have some gradient
+        self.fail("TODO")
 
     def test_raw_object_regression(self):
         raw_8bit = convert_to_8bit(self.raw_image)
