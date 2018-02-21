@@ -48,7 +48,9 @@ processes up to NCPU-1. The processing consists of:
 The results are then saved into a new directory structure and a web app is build from the data using pystache (mustache) templates
 and some javascript and html files stored in the app directory.
 
-Additionally spreadsheet (features.tsv) is created with features of every detected object. These can be used for further analyses of the observed entities. 
+Additionally spreadsheet (features.tsv) is created with features of every detected object. These are vastly more 
+detailed that those available in browser - especially intensity measurements can be found useful in further analyses
+of the observed entities. 
 
 ### Configuring for a Specific Camera ###
 

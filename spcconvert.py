@@ -309,6 +309,7 @@ def run(data_path,cfg):
     nbins = int(np.ceil(np.sqrt(total_images)))
     maj_len = np.array(lmap(itemgetter('maj_axis_len'),entry_list))*image_res
     min_len = np.array(lmap(itemgetter('min_axis_len'),entry_list))*image_res
+    volume = np.array(lmap(itemgetter('estimated_volume'),entry_list))*image_res*image_res*image_res
     aspect_ratio = np.array(lmap(itemgetter('aspect_ratio'),entry_list))
     orientation = np.array(lmap(itemgetter('orientation'),entry_list))
     area = np.array(lmap(itemgetter('area'),entry_list))*image_res*image_res
@@ -329,7 +330,7 @@ def run(data_path,cfg):
             ('orientation', orientation[i]),
             ('eccentricity', e['eccentricity']),
             ('solidity', e['solidity']),
-            ('estimated_volume', e['estimated_volume']),
+            ('estimated_volume', volume[i]),
             ('area', area[i]),
             ]
 
