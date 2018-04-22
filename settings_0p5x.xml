@@ -1,13 +1,17 @@
 <?xml version="1.0" ?>
 <root>
         <MergeSubDirs>False</MergeSubDirs>
-        <PixelSize>6.2</PixelSize>
+        <PixelSize>6.79</PixelSize>
 		<ImagesPerDir>1000</ImagesPerDir>
         <BayerPattern>RG</BayerPattern>
         <ObjectsPerROI>1</ObjectsPerROI>
         <EdgeThreshold>2.5</EdgeThreshold>
         <MinObjectArea>100</MinObjectArea>
         <Deconvolve>True</Deconvolve>
-        <UseJpeg>False</UseJpeg>
+        <DeconvolveMethod>um</DeconvolveMethod>
+        <DeconvolveIterations>13</DeconvolveIterations>
+        <DeconvolveMaskWeight>0.7</DeconvolveMaskWeight>
+        <UseJpeg>True</UseJpeg>
         <SaveRawColor>True</SaveRawColor>
+        <OutputDir>/Users/paul/Desktop/0p5x</OutputDir>
 </root>

@@ -59,6 +59,7 @@ def process_image(bundle):
     total_images = bundle['total_images']
 
     filename = os.path.basename(image_path)
+    print image_path
 
     # Patch bug in PCAM where timestamp string is somtimes incorrectly set to
     # 0 or a small value. Use the file creation time instead.
@@ -73,7 +74,7 @@ def process_image(bundle):
             break;
         except ValueError:
             pass
-            
+
     # Range check the timestamp
     if timestamp < 100000:
         print ("" + filename + " strange timestamp.")
@@ -103,7 +104,7 @@ def process_image(bundle):
     # handle new file formwat with unixtime in microseconds
     if timestamp > 1498093400000000:
         timestamp = timestamp/1000000
-        
+
     # Range check the timestamp
     if timestamp < 100000 or timestamp > time.time():
         print ("" + filename + " strange timestamp.")
@@ -111,10 +112,10 @@ def process_image(bundle):
         output = {}
         return output
 
-    
+
     # print "Timestamp: " + str(timestamp)
-    
-    timestring = datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
+
+    timestring = datetime.datetime.utcfromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
 
     entry = {}
     entry['maj_axis_len'] = features['major_axis_length']
@@ -162,12 +163,16 @@ def chunks(l, n):
     return [l[i:i+n] for i in xrange(0, len(l), n)]
 
 # Process a directory of images
-def run(data_path,cfg):
+def run(data_path,cfg,output_dir_name=''):
 
     print ("Running SPC image conversion...")
 
     # get the base name of the directory
     base_dir_name = os.path.basename(os.path.abspath(data_path))
+    if output_dir_name:
+        base_dir_name = output_dir_name
+
+    output_dir = cfg.get('OutputDir','.')
 
     # list the directory for tif images
     print ("Listing directory " + base_dir_name + "...")
@@ -190,9 +195,11 @@ def run(data_path,cfg):
 
     # Get the total number of images in the directory
     total_images = len(image_list)
+    print "found " + str(total_images) + " images..."
 
     # Create the output directories for the images and web app files
-    subdir = os.path.join(data_path,'..',base_dir_name + '_static_html')
+    subdir = os.path.join(output_dir,base_dir_name)
+
     if not os.path.exists(subdir):
         os.makedirs(subdir)
     image_dir = os.path.join(subdir,'images')
@@ -203,11 +210,13 @@ def run(data_path,cfg):
 
     # loop over the images and do the processing
     images_per_dir = cfg.get('ImagesPerDir',2000)
-    
+
     if cfg.get("BayerPattern").lower() == "rg":
         bayer_conv = cv2.COLOR_BAYER_RG2RGB
     if cfg.get("BayerPattern").lower() == "bg":
         bayer_conv = cv2.COLOR_BAYER_BG2RGB
+    if cfg.get("BayerPattern").lower() == "gr":
+        bayer_conv = cv2.COLOR_BAYER_GR2RGB
 
     print ("Loading images...\n",)
     bundle_queue = Queue()
@@ -223,16 +232,18 @@ def run(data_path,cfg):
 
         bundle = {}
         bundle['image_path'] = image
-        bundle['image'] = cvtools.import_image(os.path.dirname(image),filename,bayer_pattern=bayer_conv)
-        bundle['data_path'] = data_path
-        bundle['image_dir'] = absdir
-        bundle['reldir'] = reldir
-        bundle['cfg'] = cfg
-        bundle['total_images'] = total_images
+        try:
+            bundle['image'] = cvtools.import_image(os.path.dirname(image),filename,bayer_pattern=bayer_conv)
+            bundle['data_path'] = data_path
+            bundle['image_dir'] = absdir
+            bundle['reldir'] = reldir
+            bundle['cfg'] = cfg
+            bundle['total_images'] = total_images
 
-        bundle_queue.put(bundle)
-        print ("Loading images... (" + str(index) + " of " + str(total_images) + ")\n"),
-
+            bundle_queue.put(bundle)
+            print ("Loading images... (" + str(index) + " of " + str(total_images) + ")\n"),
+        except:
+            print "Error loading image, skipping"
         #if index > 2000:
         #    total_images = index
         #    break
@@ -258,15 +269,16 @@ def run(data_path,cfg):
     use_jpeg = use_jpeg = cfg.get("UseJpeg").lower() == 'true'
     raw_color = cfg.get("SaveRawColor").lower() == 'true'
     while True:
-        print ("Processing and saving images... (" + str(counter).zfill(5) + " of " + str(total_images).zfill(5) + ")\r",)
+        #print ("Processing and saving images... (" + str(counter).zfill(5) + " of " + str(total_images).zfill(5) + ")\r",)
 
-        if counter >= total_images:
+        if counter >= total_images-1:
             break
 
         #if output_queue.qsize() == 0:
 
         try:
-            output = output_queue.get()
+            #print "Dequeuing image..."
+            output = output_queue.get(block=True,timeout=10)
             if output:
                 entry_list.append(output['entry'])
                 output_path = os.path.join(output['image_path'],output['prefix'])
@@ -278,12 +290,13 @@ def run(data_path,cfg):
                     if raw_color:
                         cv2.imwrite(os.path.join(output_path+"_rawcolor.png"),output['features']['rawcolor'])
                     cv2.imwrite(os.path.join(output_path+".png"),output['features']['image'])
-                
+
                 cv2.imwrite(os.path.join(output_path+"_binary.png"),output['features']['binary'])
 
             counter = counter + 1
         except:
-            time.sleep(0.05)
+            print "Queue empty\n"
+            break
 
     # Record the total time for processing
     proc_time = int(math.floor(time.time()-start_time))
@@ -300,7 +313,7 @@ def run(data_path,cfg):
     # Create histograms of several key features
 
     # image resolution in mm/pixel
-    image_res = cfg.get('PixelSize',22.1)/1000;
+    image_res = cfg.get('PixelSize',22.1)/1000
 
     #print "Image resolution is set to: " + str(image_res) + " mm/pixel."
 
@@ -314,6 +327,7 @@ def run(data_path,cfg):
     orientation = np.array(lmap(itemgetter('orientation'),entry_list))
     area = np.array(lmap(itemgetter('area'),entry_list))*image_res*image_res
     unixtime = np.array(lmap(itemgetter('timestamp'),entry_list))
+
     elapsed_seconds = unixtime - np.min(unixtime)
     file_size = np.array(lmap(itemgetter('file_size'),entry_list))/1000.0
 
@@ -405,6 +419,9 @@ def run(data_path,cfg):
     context['dir_name'] = base_dir_name
     context['raw_color'] = raw_color
     context['image_res'] = image_res
+    context['reallybig'] = 90*image_res
+    context['big'] = 45*image_res
+    context['small'] = 22*image_res
     if use_jpeg:
         context['image_ext'] = '.jpeg'
     else:
@@ -443,11 +460,11 @@ def run(data_path,cfg):
         charts.append(chart)
 
     context['charts'] = charts
-    
+
     # render the html page and save to disk
     page = pystache.render(template,context)
 
-    with open(os.path.join(subdir,'spcdata.html'),"w") as fconv:
+    with open(os.path.join(subdir,'index.html'),"w") as fconv:
         fconv.write(page)
 
     # remove any old app files and try to copy over new ones
@@ -475,17 +492,38 @@ def run(data_path,cfg):
         fconv.write(page)
 
     print ("Done.")
-    
+
 def valid_image_dir(test_path):
 
     list = glob.glob(os.path.join(test_path,"*.tif"))
-    
+
     if len(list) > 0:
         return True
-    else:  
+    else:
         return False
-    
-    
+
+def batch_process_directory(data_path,cfg):
+
+    # unpack archives
+    tar_files = glob.glob(os.path.join(data_path,'*.tar'))
+    extracted_path = os.path.join(data_path,"unpacked")
+
+    if not os.path.exists(extracted_path):
+        os.makedirs(extracted_path)
+
+    for tar_file in tar_files:
+
+        with tarfile.open(tar_file) as archive:
+            for member in archive.getmembers():
+                if member.isreg():  # skip if the TarInfo is not files
+                    member.name = os.path.basename(member.name) # remove the path by reset it
+                    archive.extract(member,extracted_path) # extract
+
+    run(extracted_path,cfg,output_dir_name=os.path.basename(data_path.rstrip("/")))
+
+
+
+
 # Module multiprocessing is organized differently in Python 3.4+
 try:
     # Python 3.4+
@@ -527,47 +565,63 @@ if __name__ == '__main__':
     if len(sys.argv) <= 1:
         print ("Please input a dirtectory of data directories, aborting.")
     else:
-        if len(sys.argv) <= 2:
-            data_path = sys.argv[1]
+
+        data_path = sys.argv[1]
+        cfg = {}
+
+        if len(sys.argv) == 2:
 
             # load the config file
             cfg = xmlsettings.XMLSettings(os.path.join(sys.path[0],'settings.xml'))
-
-            combine_subdirs = cfg.get('MergeSubDirs',"False").lower() == "true"
-            
             print ("Settings file: " + os.path.join(sys.path[0],'settings.xml'))
 
-            # If file given try to unpack
-            if os.path.isfile(data_path):
-                extracted_path = data_path + "_unpacked"
-                with tarfile.open(data_path) as archive:
-                    archive.extractall(path=extracted_path)
-                data_path = extracted_path
-                to_clean = extracted_path
+        if len(sys.argv) >= 3:
 
-            # If given directory is a single data directory, just process it
-            if valid_image_dir(data_path):
-                run(data_path,cfg)
+            # load the config file
+            cfg = xmlsettings.XMLSettings(os.path.join(sys.path[0],sys.argv[2]))
+            print ("Settings file: " + os.path.join(sys.path[0],sys.argv[2]))
+
+        if len(sys.argv) >= 4:
+
+            if sys.argv[3] == 'batch':
+
+                batch_process_directory(data_path,cfg)
                 sys.exit(0)
 
-            # Otherwise look for data directories in the given directory
 
-            # List data directories and process each one
-            # expect the directories to be in the unixtime format
-            directory_list = sorted(glob.glob(os.path.join(data_path,"[0-9]"*10)))
+        combine_subdirs = cfg.get('MergeSubDirs',"False").lower() == "true"
 
-            if len(directory_list) == 0:
-                print ("No data directories found.")
-                sys.exit(0)
-                
+        # If file given try to unpack
+        if os.path.isfile(data_path):
+            extracted_path = data_path + "_unpacked"
+            with tarfile.open(data_path) as archive:
+                archive.extractall(path=extracted_path)
+            data_path = extracted_path
+            to_clean = extracted_path
+
+        # If given directory is a single data directory, just process it
+        if valid_image_dir(data_path):
+            run(data_path,cfg)
+            sys.exit(0)
+
+        # Otherwise look for data directories in the given directory
+
+        # List data directories and process each one
+        # expect the directories to be in the unixtime format
+        directory_list = sorted(glob.glob(os.path.join(data_path,"[0-9]"*10)))
+
+        if len(directory_list) == 0:
+            print ("No data directories found.")
+            sys.exit(0)
 
 
-            # Process the data directories in order
-            print ('Processing each data directory...')
-            for directory in directory_list:
-                if os.path.isdir(directory):
-                    if not combine_subdirs:
-                        if valid_image_dir(directory):
-                            run(directory,cfg)
-                    else:
+
+        # Process the data directories in order
+        print ('Processing each data directory...')
+        for directory in directory_list:
+            if os.path.isdir(directory):
+                if not combine_subdirs:
+                    if valid_image_dir(directory):
                         run(directory,cfg)
+                else:
+                    run(directory,cfg)
