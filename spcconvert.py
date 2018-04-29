@@ -400,9 +400,11 @@ def run(data_path,cfg,output_dir_name=''):
 
     print ("Building web app...")
 
+    app_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)),'app')
+
     # Load html template for rendering
     template = ""
-    with open(os.path.join('app','index.html'),"r") as fconv:
+    with open(os.path.join(app_dir,'index.html'),"r") as fconv:
         template = fconv.read()
 
     # Define the render context from the processed histograms, images, and stats
@@ -470,15 +472,15 @@ def run(data_path,cfg,output_dir_name=''):
     # remove any old app files and try to copy over new ones
     try:
         shutil.rmtree(os.path.join(subdir,"css"),ignore_errors=True)
-        shutil.copytree("app/css",os.path.join(subdir,"css"))
+        shutil.copytree(os.path.join(app_dir,"css"),os.path.join(subdir,"css"))
         shutil.rmtree(os.path.join(subdir,"js"),ignore_errors=True)
-        shutil.copytree("app/js",os.path.join(subdir,"js"))
+        shutil.copytree(os.path.join(app_dir,"js"),os.path.join(subdir,"js"))
     except:
         print ("Error copying supporting files for html.")
 
     # Load roistore.js database for rendering
     template = ""
-    with open(os.path.join('app','js','database-template.js'),"r") as fconv:
+    with open(os.path.join(app_dir,'js','database-template.js'),"r") as fconv:
         template = fconv.read()
 
     context = {}
