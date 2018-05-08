@@ -8,7 +8,7 @@
         <EdgeThreshold>2.5</EdgeThreshold>
         <MinObjectArea>100</MinObjectArea>
         <Deconvolve>True</Deconvolve>
-        <DeconvolveMethod>um</DeconvolveMethod>
+        <DeconvolveMethod>lr</DeconvolveMethod>
         <DeconvolveIterations>13</DeconvolveIterations>
         <DeconvolveMaskWeight>0.7</DeconvolveMaskWeight>
         <UseJpeg>True</UseJpeg>

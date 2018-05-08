@@ -59,7 +59,7 @@ def process_image(bundle):
     total_images = bundle['total_images']
 
     filename = os.path.basename(image_path)
-    print image_path
+    #print(image_path)
 
     # Patch bug in PCAM where timestamp string is somtimes incorrectly set to
     # 0 or a small value. Use the file creation time instead.
@@ -77,7 +77,7 @@ def process_image(bundle):
 
     # Range check the timestamp
     if timestamp < 100000:
-        print ("" + filename + " strange timestamp.")
+        #print ("" + filename + " strange timestamp.")
         #timestamp = os.path.getctime(image_path)
         output = {}
         return output
@@ -107,7 +107,7 @@ def process_image(bundle):
 
     # Range check the timestamp
     if timestamp < 100000 or timestamp > time.time():
-        print ("" + filename + " strange timestamp.")
+        #print("" + filename + " strange timestamp.")
         #timestamp = os.path.getctime(image_path)
         output = {}
         return output
@@ -145,6 +145,7 @@ def process_image(bundle):
     output['image_path'] = image_dir
     output['prefix'] = prefix
     output['features'] = features
+    output['image_name'] = os.path.basename(image_path)
 
     return output
 
@@ -163,25 +164,28 @@ def chunks(l, n):
     return [l[i:i+n] for i in xrange(0, len(l), n)]
 
 # Process a directory of images
-def run(data_path,cfg,output_dir_name=''):
+def run(lgr,data_path,cfg,output_dir_name='',output_path=''):
 
-    print ("Running SPC image conversion...")
+    lgr.info("Running SPC image conversion...")
 
     # get the base name of the directory
     base_dir_name = os.path.basename(os.path.abspath(data_path))
     if output_dir_name:
         base_dir_name = output_dir_name
 
-    output_dir = cfg.get('OutputDir','.')
-
+    if output_path == '':
+        output_dir = cfg.get('OutputDir','.')
+    else:
+        output_dir = output_path
+    
     # list the directory for tif images
-    print ("Listing directory " + base_dir_name + "...")
+    lgr.info("Listing directory " + base_dir_name + "...")
 
     image_list = []
     if cfg.get('MergeSubDirs',"false").lower() == "true":
         sub_directory_list = sorted(glob.glob(os.path.join(data_path,"[0-9]"*10)))
         for sub_directory in sub_directory_list:
-            print ("Listing sub directory " + sub_directory + "...")
+            lgr.info("Listing sub directory " + sub_directory + "...")
             image_list += glob.glob(os.path.join(sub_directory,"*.tif"))
     else:
         image_list += glob.glob(os.path.join(data_path,"*.tif"))
@@ -190,12 +194,12 @@ def run(data_path,cfg,output_dir_name=''):
 
     # skip if no images were found
     if len(image_list) == 0:
-        print ("No images were found. skipping this directory.")
+        lgr.info("No images were found. skipping this directory.")
         return
 
     # Get the total number of images in the directory
     total_images = len(image_list)
-    print "found " + str(total_images) + " images..."
+    lgr.info("found " + str(total_images) + " images...")
 
     # Create the output directories for the images and web app files
     subdir = os.path.join(output_dir,base_dir_name)
@@ -206,19 +210,22 @@ def run(data_path,cfg,output_dir_name=''):
     if not os.path.exists(image_dir):
         os.makedirs(image_dir)
 
-    print ("Starting image conversion and page generation...")
+    lgr.info("Starting image conversion and page generation...")
 
     # loop over the images and do the processing
     images_per_dir = cfg.get('ImagesPerDir',2000)
 
+    # default bayer conv
+    bayer_conv = cv2.COLOR_BAYER_RG2RGB
+    
     if cfg.get("BayerPattern").lower() == "rg":
         bayer_conv = cv2.COLOR_BAYER_RG2RGB
     if cfg.get("BayerPattern").lower() == "bg":
         bayer_conv = cv2.COLOR_BAYER_BG2RGB
     if cfg.get("BayerPattern").lower() == "gr":
         bayer_conv = cv2.COLOR_BAYER_GR2RGB
+    
 
-    print ("Loading images...\n",)
     bundle_queue = Queue()
     for index, image in enumerate(image_list):
 
@@ -241,9 +248,9 @@ def run(data_path,cfg,output_dir_name=''):
             bundle['total_images'] = total_images
 
             bundle_queue.put(bundle)
-            print ("Loading images... (" + str(index) + " of " + str(total_images) + ")\n"),
-        except:
-            print "Error loading image, skipping"
+            lgr.info("Loading images... (" + str(index) + " of " + str(total_images) + ")\r"),
+        except Exception as e:
+            lgr.info("Error loading image, skipping: " + str(e))
         #if index > 2000:
         #    total_images = index
         #    break
@@ -263,7 +270,7 @@ def run(data_path,cfg,output_dir_name=''):
         processes.append(p)
 
     # Monitor processing of the images and save processed images to disk as they become available
-    print ("\nProcessing Images...\r"),
+    lgr.info("\nProcessing Images...\r"),
     counter = 0
     entry_list = []
     use_jpeg = use_jpeg = cfg.get("UseJpeg").lower() == 'true'
@@ -280,6 +287,7 @@ def run(data_path,cfg,output_dir_name=''):
             #print "Dequeuing image..."
             output = output_queue.get(block=True,timeout=10)
             if output:
+                lgr.info(output['image_name'])
                 entry_list.append(output['entry'])
                 output_path = os.path.join(output['image_path'],output['prefix'])
                 if use_jpeg:
@@ -295,7 +303,7 @@ def run(data_path,cfg,output_dir_name=''):
 
             counter = counter + 1
         except:
-            print "Queue empty\n"
+            lgr.info("Queue empty\n")
             break
 
     # Record the total time for processing
@@ -305,7 +313,7 @@ def run(data_path,cfg,output_dir_name=''):
     for p in processes:
         p.terminate()
 
-    print ("\nPostprocessing...")
+    lgr.info("Postprocessing...")
 
     # sort the entries by height and build the output
     entry_list.sort(key=itemgetter('maj_axis_len'),reverse=True)
@@ -357,11 +365,11 @@ def run(data_path,cfg,output_dir_name=''):
         entry_list_scaled.append(data)
 
     total_seconds = max(elapsed_seconds)
-    print ("Total seconds recorded: " + str(total_seconds))
+    lgr.info("Total seconds recorded: " + str(total_seconds))
     if total_seconds < 1:
         total_seconds = 1
 
-    print ("\nComputing histograms...")
+    lgr.info("Computing histograms...")
 
     # Compute histograms
     all_hists = {}
@@ -379,7 +387,7 @@ def run(data_path,cfg,output_dir_name=''):
     all_hists['orientation'] = json.dumps(lzip(hist[1].tolist(),hist[0].tolist()))
     hist = np.histogram(file_size,nbins)
 
-    print ("\nComputing stats...")
+    lgr.info("Computing stats...")
 
     all_hists['file_size'] = json.dumps(lzip(hist[1].tolist(),hist[0].tolist()))
     # Compute general stats from features
@@ -393,12 +401,12 @@ def run(data_path,cfg,output_dir_name=''):
     all_stats['file_size'] = stats.describe(file_size)
 
 
-    print ("Exporting spreadsheet results...")
+    lgr.info("Exporting spreadsheet results...")
 
     df = pandas.DataFrame(entry_list_scaled)
     df.to_csv(os.path.join(subdir,'features.tsv'), index=False, sep='\t')
 
-    print ("Building web app...")
+    lgr.info("Building web app...")
 
     app_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)),'app')
 
@@ -476,7 +484,7 @@ def run(data_path,cfg,output_dir_name=''):
         shutil.rmtree(os.path.join(subdir,"js"),ignore_errors=True)
         shutil.copytree(os.path.join(app_dir,"js"),os.path.join(subdir,"js"))
     except:
-        print ("Error copying supporting files for html.")
+        lgr.info("Error copying supporting files for html.")
 
     # Load roistore.js database for rendering
     template = ""
@@ -493,7 +501,9 @@ def run(data_path,cfg,output_dir_name=''):
     with open(os.path.join(subdir,'js','database.js'),"w") as fconv:
         fconv.write(page)
 
-    print ("Done.")
+    lgr.info("Done.")
+    
+    return True
 
 def valid_image_dir(test_path):
 
@@ -504,7 +514,12 @@ def valid_image_dir(test_path):
     else:
         return False
 
-def batch_process_directory(data_path,cfg):
+def batch_process_directory(lgr,data_path,cfg,cfg_path='',output_path=''):
+
+    if not cfg_path == '':
+        
+        cfg = xmlsettings.XMLSettings(cfg_path)
+        lgr.info("Settings file: " + cfg_path)
 
     # unpack archives
     tar_files = glob.glob(os.path.join(data_path,'*.tar'))
@@ -521,7 +536,11 @@ def batch_process_directory(data_path,cfg):
                     member.name = os.path.basename(member.name) # remove the path by reset it
                     archive.extract(member,extracted_path) # extract
 
-    run(extracted_path,cfg,output_dir_name=os.path.basename(data_path.rstrip("/")))
+    if run(lgr,extracted_path,cfg,output_dir_name=os.path.basename(data_path.rstrip("/")),output_path=output_path):
+        shutil.rmtree(extracted_path)
+        return True
+    else:
+        return False
 
 
 
@@ -568,6 +587,20 @@ if __name__ == '__main__':
         print ("Please input a dirtectory of data directories, aborting.")
     else:
 
+    
+        # setup logging
+        log = logging.getLogger('')
+        log.setLevel(logging.DEBUG)
+        format = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+
+        ch = logging.StreamHandler(sys.stdout)
+        ch.setFormatter(format)
+        log.addHandler(ch)
+
+        fh = handlers.RotatingFileHandler(os.path.join('logs',str(int(time.time()))) + '.log', maxBytes=(1048576*5), backupCount=7)
+        fh.setFormatter(format)
+        log.addHandler(fh)
+    
         data_path = sys.argv[1]
         cfg = {}
 
@@ -575,19 +608,23 @@ if __name__ == '__main__':
 
             # load the config file
             cfg = xmlsettings.XMLSettings(os.path.join(sys.path[0],'settings.xml'))
-            print ("Settings file: " + os.path.join(sys.path[0],'settings.xml'))
+            log.info("Settings file: " + os.path.join(sys.path[0],'settings.xml'))
 
         if len(sys.argv) >= 3:
 
             # load the config file
             cfg = xmlsettings.XMLSettings(os.path.join(sys.path[0],sys.argv[2]))
-            print ("Settings file: " + os.path.join(sys.path[0],sys.argv[2]))
+            log.info("Settings file: " + os.path.join(sys.path[0],sys.argv[2]))
 
         if len(sys.argv) >= 4:
 
             if sys.argv[3] == 'batch':
 
-                batch_process_directory(data_path,cfg)
+                # override cfg output dir from command line
+                if len(sys.argv) >= 5:
+                    batch_process_directory(log,data_path,cfg,output_path=sys.argv[4])
+                else:
+                    batch_process_directory(log,data_path,cfg)
                 sys.exit(0)
 
 
@@ -603,7 +640,7 @@ if __name__ == '__main__':
 
         # If given directory is a single data directory, just process it
         if valid_image_dir(data_path):
-            run(data_path,cfg)
+            run(log,data_path,cfg)
             sys.exit(0)
 
         # Otherwise look for data directories in the given directory
@@ -613,17 +650,17 @@ if __name__ == '__main__':
         directory_list = sorted(glob.glob(os.path.join(data_path,"[0-9]"*10)))
 
         if len(directory_list) == 0:
-            print ("No data directories found.")
-            sys.exit(0)
+            log.info("No data directories found.")
+            sys.exit(1)
 
 
 
         # Process the data directories in order
-        print ('Processing each data directory...')
+        log.info('Processing each data directory...')
         for directory in directory_list:
             if os.path.isdir(directory):
                 if not combine_subdirs:
                     if valid_image_dir(directory):
-                        run(directory,cfg)
+                        run(log,directory,cfg)
                 else:
-                    run(directory,cfg)
+                    run(log,directory,cfg)

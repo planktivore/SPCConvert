@@ -4,6 +4,9 @@
 *.ttf
 *.woff
 *.woff2
+*.log
+.DS_Stroe
+proc_dir_db.txt
 
 \.idea/
 
