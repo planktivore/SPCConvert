@@ -238,3 +238,30 @@ $( document ).ready(function() {
   //$('.progress').addClass('collapse');
   updateMosaicImages({preset:'reallybig'});
 });
+
+var num_pred_0 = document.getElementById("doughnut-chart").getAttribute("data-pred-0");
+var num_pred_1 = document.getElementById("doughnut-chart").getAttribute("data-pred-1");
+
+if( !isNaN(num_pred_1)) {
+    num_pred_1 = parseInt(num_pred_1, 10);
+    num_pred_0 = parseInt(num_pred_0, 10);
+new Chart(document.getElementById("doughnut-chart"), {
+    type: 'doughnut',
+    data: {
+      labels: ["other", "Prorocentrum Michans"],
+      datasets: [
+        {
+          label: "# of Predictions",
+          backgroundColor: ["#3e95cd", "#8e5ea2"],
+          data: [num_pred_0, num_pred_1]
+        }
+      ]
+    },
+    options: {
+      title: {
+        display: true,
+        text: 'Prediction Distribution'
+      }
+    }
+});
+}

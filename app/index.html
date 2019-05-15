@@ -17,6 +17,7 @@
             <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
             <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
         <![endif]-->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
     </head>
 
     <body>
@@ -26,6 +27,7 @@
                 <li><a id="data-info" class="navbar-brand" href="#">{{dir_name}}, {{total_images}} images processed in {{proc_time}} seconds.</a></li>
                 <li role="presentation" class="active"><a class="nav-pill" href="#images" aria-controls="images" role="tab" data-toggle="tab">Images</a></li>
                 <li role="presentation"><a class="nav-pill" href="#stats" aria-controls="stats" role="tab" data-toggle="tab">Stats</a></li>
+                <li role="presentation"><a class="nav-pill" href="#preds" aria-controls="preds" role="tab" data-toggle="tab">Predictions</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li>
@@ -109,6 +111,10 @@
                             {{/charts}}
                         </tbody>
                     </table>
+                </div>
+                <div role="tabpanel" class="tab-pane" id="preds">
+                    <h4>Prediction Chart</h4>
+                    <canvas id="doughnut-chart" width="450" height="450" data-pred-1="{{num_pred_1}}" data-pred-0="{{num_pred_0}}"></canvas>
                 </div>
             </div>
         </div>

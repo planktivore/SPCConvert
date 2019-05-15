@@ -177,4 +177,7 @@ img #TargetImage {
     display: inline-block;
 }
 
+#data-info {
+    font-size: 15px;
+}
 
