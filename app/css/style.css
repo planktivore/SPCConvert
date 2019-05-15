@@ -181,3 +181,8 @@ img #TargetImage {
     font-size: 15px;
 }
 
+#graph-container {
+  height: 700px;
+  width: 700px;
+}
+
