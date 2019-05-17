@@ -443,7 +443,7 @@ def run(data_path,cfg):
         charts.append(chart)
 
     context['charts'] = charts
-    context['num_pred_0'], context['num_pred_1'] = ("{{num_pred_1}}","{{num_pred_0}}") 
+    context['num_pred_0'], context['num_pred_1'] = ("{{num_pred_0}}", "{{num_pred_1}}")
 
     
     # render the html page and save to disk
