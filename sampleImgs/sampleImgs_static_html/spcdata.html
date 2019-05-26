@@ -181,10 +181,14 @@
                 <div role="tabpanel" class="tab-pane" id="annot">
                     <div class="tool-pane">
                         <ul class="nav">
-                            <li id="class-fit">Label: </li>
+                            <li id="class-fit">Label: <input type="text" list="classes"></li>
+                            <datalist id=classes>
+                                <option value="Prorocentrum">
+                                <option value="Other">
+                            </datalist>
                             <li id="num-incorrect"> 0/0</li>
                             <li id="num-annot"> 0/0</li>
-                            <li id="annot-sub">Submit </li>
+                            <li id="annot-sub" class="button">Submit </li>
                         </ul>
                     </div>
                     <div id="MosaicContainer-annot"> 
