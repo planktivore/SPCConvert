@@ -7,6 +7,20 @@ import os
 import json
 
 # Annotation
+
+def to_json_format(str_db):
+	"""Convert str db into python list of db values (json format)"""
+	ind_opbrac = str_db.find("(") + 1
+	str_db = str_db[ind_opbrac:]
+
+	ind_brac = str_db.find(")")
+	str_db = str_db[:ind_brac]
+
+	ind_last_comma = len(str_db) - 2
+	st_db = str_db[:ind_last_comma - 1] + str_db[ind_last_comma:]
+
+	return json.loads(str_db)
+
 # getting predicted labels on the static page
 def loadDB(db_path, json_path):
 
@@ -19,18 +33,7 @@ def loadDB(db_path, json_path):
 	prediction_df = pd.read_json(json_path)
 
 	# convert curr_db into valid json string
-	ind_opbrac = curr_db.find("(") + 1
-	curr_db = curr_db[ind_opbrac:]
-
-	ind_brac = curr_db.find(")")
-	curr_db = curr_db[:ind_brac]
-
-	ind_last_comma = len(curr_db) - 2
-	curr_db = curr_db[:ind_last_comma-1] + curr_db[ind_last_comma:] 	
-
-	#print(curr_db)
-	# create a python list from the db values
-	entries = json.loads(curr_db)
+	entries = to_json_format(curr_db)
 
 	# create a dict of all labels, and URLs
 	url_to_label = {}
@@ -107,6 +110,20 @@ def update_preds(html_path, json_path):
 	with open(html_path,"w") as fconv:
 		fconv.write(page)
 
+def exportDB(db, csv_fname='database.csv'):
+	"""Exports database file to csv
+
+	Args:
+		db (list): List of db values
+
+	Returns:
+		None
+	"""
+	# export database as csv
+	df = pd.DataFrame(db[0], index=[0])
+	for d_ in db[1:]:
+		df = df.append(d_, ignore_index=True)
+	df.to_csv(csv_fname, index=False)
 
 # Entry point
 if __name__ == '__main__':
