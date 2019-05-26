@@ -24,10 +24,11 @@
         <nav class="navbar navbar-default navbar-fixed-top">
             <ul class="nav nav-pills">
                 <li><a id="app-name" class="navbar-brand" href="#">SPCConvert 1.0.1.05 :</a></li>
-                <li><a id="data-info" class="navbar-brand" href="#">sampleImgs, 100 images processed in 4 seconds.</a></li>
+                <li><a id="data-info" class="navbar-brand" href="#">sampleImgs, 100 images processed in 12 seconds.</a></li>
                 <li role="presentation" class="active"><a class="nav-pill" href="#images" aria-controls="images" role="tab" data-toggle="tab">Images</a></li>
                 <li role="presentation"><a class="nav-pill" href="#stats" aria-controls="stats" role="tab" data-toggle="tab">Stats</a></li>
                 <li role="presentation"><a class="nav-pill" href="#preds" aria-controls="preds" role="tab" data-toggle="tab">Predictions</a></li>
+                <li role="presentation"><a class="nav-pill" href="#annot" aria-controls="annot" role="tab" data-toggle="tab">Annotate</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li>
@@ -176,6 +177,12 @@
                         <canvas id="doughnut-chart" width="450" height="450" data-pred-1="93" data-pred-0="7"></canvas>
                     </div>
                 </div>
+                <!-- Annotation Panel -->
+                <div role="tabpanel" class="tab-pane" id="annot">
+                    <div class="class-filt">
+                        Label: <!-- TODO add selection box-->
+                    </div>
+                </div>
             </div>
         </div>
         <div class="modal fade" id="ImageDetail" tabindex="-1" role="dialog" aria-labelledby="basicModal" aria-hidden="true">
@@ -203,6 +210,7 @@
                                     <li id="MinorAxisLength" class="list-group-item"></li>
                                     <li id="AspectRatio" class="list-group-item"></li>
                                     <li id="Orientation" class="list-group-item"></li>
+                                    <li id="class-lbl" class="list-group-item"></li>
                                 </ul>
                             </div>
                         </div>

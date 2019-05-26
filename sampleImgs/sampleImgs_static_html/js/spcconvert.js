@@ -52,6 +52,8 @@ function updateDetailImage(data) {
 	$('#MinorAxisLength').html("<h5 class='info-label'>Minor Axis Length</h5>" + "<h4>" + (data.minor_axis_length*res).toPrecision(3) + " mm</h4>");
 	$('#AspectRatio').html("<h5 class='info-label'>Aspect Ratio </h5>" + "<h4>" + (data.aspect_ratio).toPrecision(3) + "</h4>");
 	$('#Orientation').html("<h5 class='info-label'>Orientation </h5>" + "<h4>" + (data.orientation).toPrecision(3) + " degress</h4>");
+    $('#class-lbl').html("<h5 class='info-label'>Class Label </h5>" + "<h4>" + data.pred + " </h4>");
+
 };
 
 function showImageDetail(data) {

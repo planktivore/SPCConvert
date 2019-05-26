@@ -444,7 +444,6 @@ def run(data_path,cfg):
 
     context['charts'] = charts
     context['num_pred_0'], context['num_pred_1'] = ("{{num_pred_0}}","{{num_pred_1}}") 
-
     
     # render the html page and save to disk
     page = pystache.render(template,context)
