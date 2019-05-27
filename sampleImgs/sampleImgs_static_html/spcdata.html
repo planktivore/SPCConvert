@@ -24,7 +24,7 @@
         <nav class="navbar navbar-default navbar-fixed-top">
             <ul class="nav nav-pills">
                 <li><a id="app-name" class="navbar-brand" href="#">SPCConvert 1.0.1.05 :</a></li>
-                <li><a id="data-info" class="navbar-brand" href="#">sampleImgs, 100 images processed in 5 seconds.</a></li>
+                <li><a id="data-info" class="navbar-brand" href="#">sampleImgs, 100 images processed in 4 seconds.</a></li>
                 <li role="presentation" class="active"><a class="nav-pill" href="#images" aria-controls="images" role="tab" data-toggle="tab">Images</a></li>
                 <li role="presentation"><a class="nav-pill" href="#stats" aria-controls="stats" role="tab" data-toggle="tab">Stats</a></li>
                 <li role="presentation"><a class="nav-pill" href="#preds" aria-controls="preds" role="tab" data-toggle="tab">Predictions</a></li>
@@ -195,7 +195,26 @@
 
                     </div>
                     <div id="info-sidebar"> 
-                        IMAGE <br> IMAGE INFO
+                        <div id="ImageContainer-annot">
+                            <img id="TargetImg-annot" src="">
+                        </div>
+                        <div id="ImageInfo-annot">
+                            <div class="panel panel-primary">
+                                <div class="panel-heading"><h3 class="panel-title">Image Information</h3></div>
+                                <div class="panel-body">
+                                    <p></p>
+                                </div>
+                                <ul class="list-group">
+                                    <li id="ImageName-annot" class="list-group-item"></li>
+                                    <li id="Timestamp-annot" class="list-group-item"></li>
+                                    <li id="MajorAxisLength-annot" class="list-group-item"></li>
+                                    <li id="MinorAxisLength-annot" class="list-group-item"></li>
+                                    <li id="AspectRatio-annot" class="list-group-item"></li>
+                                    <li id="Orientation-annot" class="list-group-item"></li>
+                                    <li id="class-lbl-annot" class="list-group-item"></li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

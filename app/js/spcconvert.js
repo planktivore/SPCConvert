@@ -314,7 +314,7 @@ function buildAnnotMosaic(imageItems) {
     };
     
     // Delegate mouse click event to image items
-    $('.image-item').on('click', function(e) {
+    $('.image-item').on('mouseenter', function(e) {
 
         imageData = this.data;
         imageData.image_url = this.data.url.replace(/\.[^/.]+$/, ""); // remove extension
@@ -328,20 +328,9 @@ function buildAnnotMosaic(imageItems) {
         imageData.clipped_fraction = this.data.clipped_fraction;
         imageData.image_timestamp = this.data.timestring;
 
-        // Otherwise show image detail
-        showImageDetail(imageData);
-
-
-    });
-
-    // Delegate mouse enter event to image items
-    $('.image-item').on('mouseenter', function(){
-
-        var majLen = this.data.major_axis_length.toString()*res;
-        var minLen = this.data.minor_axis_length.toString()*res;
-        var text = this.data.timestring + ", Major Length: " + majLen.toPrecision(3) + " mm, Minor Length: " + minLen.toPrecision(3) + " mm";
-        $('#info-text').html('Image Info: ');
-        $('#status-text').html(text);
+        console.log("clicked")
+        // show image detail
+        showImageDetailAnnot(imageData);
 
     });
 
@@ -352,3 +341,44 @@ function buildAnnotMosaic(imageItems) {
     });
     
 }
+
+function updateDetailImageAnnot(data) {
+
+
+    //var cameraIndex = camera.val();
+    var siteURL = '';
+
+    var base_url = siteURL+data.image_url;
+    var image_url = base_url + image_ext;
+    $('#TargetImg-annot').attr("src",image_url);
+    // Compute Image size from ImageDetail Container
+    var aspectRatio = data.image_height/data.image_width;
+    var heightScale = $('#ImageDetail-annot').height()/data.image_height;
+    var widthScale = $('#ImageDetail-annot').width()/data.image_width;
+  
+    // Scale Image by width
+    $('#TargetImg-annot').width(300);
+    $('#TargetImg-annot').height(300);
+    $('#ImageDetailTitle-annot').html(image_url);
+
+    // Info
+    //console.log(data);
+    $('#ImageName-annot').html("<span class='info-label'>Image ID</span>" + "<span>" + data.image_id + "</span>");
+    $('#Timestamp-annot').html("<span class='info-label'>Collection Datetime</span>" + "<span>" + data.image_timestamp + "</span>");
+    $('#MajorAxisLength-annot').html("<span class='info-label'>Major Axis Length</span>" + "<span>" + (data.major_axis_length*res).toPrecision(3) + " mm</span>");
+    $('#MinorAxisLength-annot').html("<span class='info-label'>Minor Axis Length</span>" + "<span>" + (data.minor_axis_length*res).toPrecision(3) + " mm</span>");
+    $('#AspectRatio-annot').html("<span class='info-label'>Aspect Ratio </span>" + "<span>" + (data.aspect_ratio).toPrecision(3) + "</span>");
+    $('#Orientation-annot').html("<span class='info-label'>Orientation </span>" + "<span>" + (data.orientation).toPrecision(3) + " degress</span>");
+    $('#class-lbl-annot').html("<span class='info-label'>Class Label </span>" + "<span>" + data.pred + " </span>");
+
+};
+
+function showImageDetailAnnot(data) {
+    // Otherwise show image detail
+    //var data = this.roi_data;
+    siteURL = '';
+    var base_url = siteURL+data.image_url;
+    updateDetailImageAnnot(data);
+    $(window).resize(debouncer (function() { return updateDetailImageAnnot(data);}));
+
+};
