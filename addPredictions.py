@@ -7,7 +7,7 @@ import os
 import json
 
 # Project Level Imports
-from utils.db_utils import to_json_formac
+from utils.db_utils import to_json_format
 
 # Annotation
 # getting predicted labels on the static page
@@ -27,17 +27,21 @@ def loadDB(db_path, json_path):
 	# create a dict of all labels, and URLs
 	url_to_label = {}
 	for i in range(len(prediction_df['machine_labels'])):
+		data = {}
 		url = prediction_df['machine_labels'].iloc[i]['image_id']
-		pred = prediction_df['machine_labels'].iloc[i]['pred']
-		url_to_label[url] = pred
+		data['pred'] = prediction_df['machine_labels'].iloc[i]['pred']
+		data['prob'] = prediction_df['machine_labels'].iloc[i]['prob']
+
+		url_to_label[url] = data
 
 	# update values in the list
 	for entry in entries:
 		filename = entry['url'][13:]
 		filename = filename[:len(filename) - 5]
 		filename = filename + ".tif"
-		pred = url_to_label[filename]
-		entry["pred"] = pred
+		entry["pred"] = url_to_label[filename]['pred']
+		entry["prob_non_proro"] = url_to_label[filename]['prob'][0]
+		entry["prob_proro"] = url_to_label[filename]['prob'][1]
 
 	# write a new db from the db template with the updated list
 	db_str = json.dumps(entries)
@@ -45,27 +49,6 @@ def loadDB(db_path, json_path):
 
 	with open(db_path, "w") as fconv:
 		fconv.write(db_str)
-
-	#prediction_df['machine_labels'].loc[prediction_df['machine_labels']["image_id"] == filename]
-
-	# Load roistore.js database for rendering
-    #template = ""
-    #with open(os.path.join('app','js','database-template.js'),"r") as fconv:
-      #  template = fconv.read()
-
-    #context = {}
-    #context['image_items'] = entry_list
-    #context['table'] = base_dir_name
-
-    # render the javascript page and save to disk
-    #page = pystache.render(template,context)
-
-    #with open(os.path.join(subdir,'js','database.js'),"w") as fconv:
-        #fconv.write(page)
-
-# TODO design way to get feedback - will be done in the JS
-# update groundtruth value - write another script
-
 
 # Visualisation
 # go through prediction data and count the classes
