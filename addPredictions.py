@@ -6,21 +6,10 @@ import numpy as np
 import os
 import json
 
+# Project Level Imports
+from utils.db_utils import to_json_formac
+
 # Annotation
-
-def to_json_format(str_db):
-	"""Convert str db into python list of db values (json format)"""
-	ind_opbrac = str_db.find("(") + 1
-	str_db = str_db[ind_opbrac:]
-
-	ind_brac = str_db.find(")")
-	str_db = str_db[:ind_brac]
-
-	ind_last_comma = len(str_db) - 2
-	st_db = str_db[:ind_last_comma - 1] + str_db[ind_last_comma:]
-
-	return json.loads(str_db)
-
 # getting predicted labels on the static page
 def loadDB(db_path, json_path):
 
@@ -109,21 +98,6 @@ def update_preds(html_path, json_path):
 
 	with open(html_path,"w") as fconv:
 		fconv.write(page)
-
-def exportDB(db, csv_fname='database.csv'):
-	"""Exports database file to csv
-
-	Args:
-		db (list): List of db values
-
-	Returns:
-		None
-	"""
-	# export database as csv
-	df = pd.DataFrame(db[0], index=[0])
-	for d_ in db[1:]:
-		df = df.append(d_, ignore_index=True)
-	df.to_csv(csv_fname, index=False)
 
 # Entry point
 if __name__ == '__main__':
