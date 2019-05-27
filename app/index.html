@@ -123,9 +123,9 @@
                 <div role="tabpanel" class="tab-pane" id="annot">
                     <div class="tool-pane">
                         <ul class="nav nav-pills">
-                            <li class="nav-pill" id="class-fit">Label: <input type="text" list="classes"></li>
-                            <datalist id=classes>
-                                <option value="Prorocentrum">
+                            <li class="nav-pill" id="class-filt">Label: <input type="text" id="class-drop" list="classes" onchange="createAnnotMosaic()"></li>
+                                                        <datalist id=classes>
+                                                            <option value="Prorocentrum">
                                 <option value="Other">
                             </datalist>
                             <li class="nav-pill" id="num-incorrect"> 0/0</li>

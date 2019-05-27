@@ -267,3 +267,88 @@ new Chart(document.getElementById("doughnut-chart"), {
     }
 });
 }
+
+// filter by class label
+function createAnnotMosaic(event) {
+
+    // create the Mosaic
+    if(document.getElementById("class-drop").value == "Prorocentrum"){
+        populateMos(1);
+    } else {
+        populateMos(0);
+    }
+}
+
+// populate mosaic with images with class label
+function populateMos(label) {
+
+    // query for all images with pred = label
+    imgItems = roistore({pred:{is:label}}).order("height desc").get();
+
+    // display imgItems
+    buildAnnotMosaic(imgItems);
+}
+
+function buildAnnotMosaic(imageItems) {
+    
+    loadedCounter = 0;
+    $('#MosaicContainer-annot').empty();
+    
+    
+    for ( var i = 0; i < imageItems.length; i++ ) {
+        var elem = getItemElement(imageItems[i]);
+        $('#MosaicContainer-annot').append(elem);
+        loadedCounter++;
+    }
+    
+    // create item element for each image
+    function getItemElement(data) {
+        var elem = document.createElement('div');
+        image_ext = "." + data.url.split('.').slice(-1)[0];
+        elem.style.backgroundImage = "url('"+data.url+"')";
+        elem.className = 'image-item'
+        elem.style.width = data.width.toString()+"px";
+        elem.style.height = data.height.toString()+"px";
+        elem.data = data;
+        return elem;
+    };
+    
+    // Delegate mouse click event to image items
+    $('.image-item').on('click', function(e) {
+
+        imageData = this.data;
+        imageData.image_url = this.data.url.replace(/\.[^/.]+$/, ""); // remove extension
+        imageData.image_id = imageData.image_url.split("/").slice(-1)[0]
+        imageData.image_width = this.data.width;
+        imageData.image_height = this.data.height;
+        imageData.major_axis_length = this.data.major_axis_length;
+        imageData.minor_axis_length = this.data.minor_axis_length;
+        imageData.aspect_ratio = this.data.aspect_ratio;
+        imageData.orientation = this.data.orientation;
+        imageData.clipped_fraction = this.data.clipped_fraction;
+        imageData.image_timestamp = this.data.timestring;
+
+        // Otherwise show image detail
+        showImageDetail(imageData);
+
+
+    });
+
+    // Delegate mouse enter event to image items
+    $('.image-item').on('mouseenter', function(){
+
+        var majLen = this.data.major_axis_length.toString()*res;
+        var minLen = this.data.minor_axis_length.toString()*res;
+        var text = this.data.timestring + ", Major Length: " + majLen.toPrecision(3) + " mm, Minor Length: " + minLen.toPrecision(3) + " mm";
+        $('#info-text').html('Image Info: ');
+        $('#status-text').html(text);
+
+    });
+
+    $('.image-item').on('mouseexit', function(){
+
+        $('#status-text').html('');
+
+    });
+    
+}

@@ -24,7 +24,7 @@
         <nav class="navbar navbar-default navbar-fixed-top">
             <ul class="nav nav-pills">
                 <li><a id="app-name" class="navbar-brand" href="#">SPCConvert 1.0.1.05 :</a></li>
-                <li><a id="data-info" class="navbar-brand" href="#">sampleImgs, 100 images processed in 4 seconds.</a></li>
+                <li><a id="data-info" class="navbar-brand" href="#">sampleImgs, 100 images processed in 5 seconds.</a></li>
                 <li role="presentation" class="active"><a class="nav-pill" href="#images" aria-controls="images" role="tab" data-toggle="tab">Images</a></li>
                 <li role="presentation"><a class="nav-pill" href="#stats" aria-controls="stats" role="tab" data-toggle="tab">Stats</a></li>
                 <li role="presentation"><a class="nav-pill" href="#preds" aria-controls="preds" role="tab" data-toggle="tab">Predictions</a></li>
@@ -181,9 +181,9 @@
                 <div role="tabpanel" class="tab-pane" id="annot">
                     <div class="tool-pane">
                         <ul class="nav nav-pills">
-                            <li class="nav-pill" id="class-fit">Label: <input type="text" list="classes"></li>
-                            <datalist id=classes>
-                                <option value="Prorocentrum">
+                            <li class="nav-pill" id="class-filt">Label: <input type="text" id="class-drop" list="classes" onchange="createAnnotMosaic()"></li>
+                                                        <datalist id=classes>
+                                                            <option value="Prorocentrum">
                                 <option value="Other">
                             </datalist>
                             <li class="nav-pill" id="num-incorrect"> 0/0</li>
