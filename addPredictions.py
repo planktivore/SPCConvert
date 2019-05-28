@@ -7,33 +7,17 @@ import os
 import json
 
 # Project Level Imports
-from utils.db_utils import to_json_format
+from utils.db_utils import to_json_format, loadDB
 
 # Annotation
 # getting predicted labels on the static page
-def loadDB(db_path, json_path):
+def updateDB(db_path, json_path):
 
 	# load in database file
-	curr_db = ""
-	with open(db_path, "r") as fconv:
-		curr_db = fconv.read()
+	entries = loadDB(db_path)
 
 	# load prediction data
 	prediction_df = pd.read_json(json_path)
-
-	# convert curr_db into valid json string
-	ind_opbrac = curr_db.find("(") + 1
-	curr_db = curr_db[ind_opbrac:]
-
-	ind_brac = curr_db.find(")")
-	curr_db = curr_db[:ind_brac]
-
-	ind_last_comma = len(curr_db) - 2
-	curr_db = curr_db[:ind_last_comma-1] + curr_db[ind_last_comma:]
-
-	#print(curr_db)
-	# create a python list from the db values
-	entries = json.loads(curr_db)
 
 	# create a dict of all labels, and URLs
 	url_to_label = {}
@@ -103,6 +87,6 @@ if __name__ == '__main__':
 		json_path = sys.argv[2]
 		db_path = sys.argv[3]
 		update_preds(html_path, json_path)
-		loadDB(db_path, json_path)
+		updateDB(db_path, json_path)
 	else:
 		print("too many arguments, aborting")

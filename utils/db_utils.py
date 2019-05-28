@@ -17,6 +17,7 @@ def loadDB(db_path):
         list: List of db values
 
     """
+    curr_db = ""
     with open(db_path, "r") as fconv:
         curr_db = fconv.read()
 
@@ -24,7 +25,7 @@ def loadDB(db_path):
     return db_entries
 
 
-def to_json_format(str_db=""):
+def to_json_format(str_db):
     """Convert str db into python list of db values (json format)"""
     import json
     ind_opbrac = str_db.find("(") + 1
@@ -34,7 +35,7 @@ def to_json_format(str_db=""):
 
     str_db = str_db[:ind_brac]
     ind_last_comma = len(str_db) - 2
-    st_db = str_db[:ind_last_comma - 1] + str_db[ind_last_comma:]
+    str_db = str_db[:ind_last_comma - 1] + str_db[ind_last_comma:]
     return json.loads(str_db)
 
 def to_spc_csv(db, csv_fname='database.csv'):
