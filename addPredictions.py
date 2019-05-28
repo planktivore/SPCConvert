@@ -22,7 +22,18 @@ def loadDB(db_path, json_path):
 	prediction_df = pd.read_json(json_path)
 
 	# convert curr_db into valid json string
-	entries = to_json_format(curr_db)
+	ind_opbrac = curr_db.find("(") + 1
+	curr_db = curr_db[ind_opbrac:]
+
+	ind_brac = curr_db.find(")")
+	curr_db = curr_db[:ind_brac]
+
+	ind_last_comma = len(curr_db) - 2
+	curr_db = curr_db[:ind_last_comma-1] + curr_db[ind_last_comma:]
+
+	#print(curr_db)
+	# create a python list from the db values
+	entries = json.loads(curr_db)
 
 	# create a dict of all labels, and URLs
 	url_to_label = {}
