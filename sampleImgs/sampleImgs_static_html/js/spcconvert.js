@@ -45,15 +45,16 @@ function updateDetailImage(data) {
 	$('#ImageDetailTitle').html(image_url);
 
 	// Info
+    var classes = {};
+    classes[0] = "Other";
+    classes[1] = "Prorocentrum";
 	//console.log(data);
 	$('#ImageName').html("<h5 class='info-label'>Image ID</h5>" + "<h4>" + data.image_id + "</h4>");
 	$('#Timestamp').html("<h5 class='info-label'>Collection Datetime</h5>" + "<h4>" + data.image_timestamp + "</h4>");
-	$('#MajorAxisLength').html("<h5 class='info-label'>Major Axis Length</h5>" + "<h4>" + (data.major_axis_length*res).toPrecision(3) + " mm</h4>");
-	$('#MinorAxisLength').html("<h5 class='info-label'>Minor Axis Length</h5>" + "<h4>" + (data.minor_axis_length*res).toPrecision(3) + " mm</h4>");
-	$('#AspectRatio').html("<h5 class='info-label'>Aspect Ratio </h5>" + "<h4>" + (data.aspect_ratio).toPrecision(3) + "</h4>");
-	$('#Orientation').html("<h5 class='info-label'>Orientation </h5>" + "<h4>" + (data.orientation).toPrecision(3) + " degress</h4>");
-    $('#class-lbl').html("<h5 class='info-label'>Class Label </h5>" + "<h4>" + data.pred + " </h4>");
-
+    $('#class-lbl').html("<h5 class='info-label'>Class Label </h5>" + "<h4>" + classes[data.pred] + " </h4>");
+    $('#PredictedProb').html("<h5 class='info-label'>Predicted Probabilities </h5>");
+    $('#ProbOther').html("<h4 class='info-label'>Other</h4>" + "<h4>" + data.prob_non_proro + "</h4>");
+    $('#ProbProro').html("<h4 class='info-label'>Prorocentrum</h4>" + "<h4>" + data.prob_proro + "</h4>");
 };
 
 function showImageDetail(data) {
@@ -154,6 +155,9 @@ function buildImageMosaic(imageItems) {
         imageData.orientation = this.data.orientation;
         imageData.clipped_fraction = this.data.clipped_fraction;
         imageData.image_timestamp = this.data.timestring;
+        imageData.pred = this.data.pred;
+        imageData.prob_non_proro = this.data.prob_non_proro;
+        imageData.prob_proro = this.data.prob_proro;
 
         // Otherwise show image detail
         showImageDetail(imageData);
@@ -338,6 +342,10 @@ function buildAnnotMosaic(imageItems) {
         imageData.orientation = this.data.orientation;
         imageData.clipped_fraction = this.data.clipped_fraction;
         imageData.image_timestamp = this.data.timestring;
+        imageData.gtruth = this.data.gtruth;
+        imageData.pred = this.data.pred;
+        imageData.prob_non_proro = this.data.prob_non_proro;
+        imageData.prob_proro = this.data.prob_proro;
 
         console.log("clicked")
         // show image detail
@@ -373,15 +381,17 @@ function updateDetailImageAnnot(data) {
     $('#ImageDetailTitle-annot').html(image_url);
 
     // Info
+    var classes = {};
+    classes[0] = "Other";
+    classes[1] = "Prorocentrum";
     //console.log(data);
     $('#ImageName-annot').html("<span class='info-label'>Image ID</span>" + "<span>" + data.image_id + "</span>");
     $('#Timestamp-annot').html("<span class='info-label'>Collection Datetime</span>" + "<span>" + data.image_timestamp + "</span>");
-    $('#MajorAxisLength-annot').html("<span class='info-label'>Major Axis Length</span>" + "<span>" + (data.major_axis_length*res).toPrecision(3) + " mm</span>");
-    $('#MinorAxisLength-annot').html("<span class='info-label'>Minor Axis Length</span>" + "<span>" + (data.minor_axis_length*res).toPrecision(3) + " mm</span>");
-    $('#AspectRatio-annot').html("<span class='info-label'>Aspect Ratio </span>" + "<span>" + (data.aspect_ratio).toPrecision(3) + "</span>");
-    $('#Orientation-annot').html("<span class='info-label'>Orientation </span>" + "<span>" + (data.orientation).toPrecision(3) + " degress</span>");
-    $('#class-lbl-annot').html("<span class='info-label'>Class Label </span>" + "<span>" + data.pred + " </span>");
-
+    $('#gtruth-lbl-annot').html("<span class='info-label'>Gtruth </span>" + "<span>" + "None" + " </span>");
+    $('#pred-lbl-annot').html("<span class='info-label'>Predicted Class </span>" + "<span>" + classes[data.pred] + " </span>");
+    $('#PredictedProb-annot').html("<span class='info-label'>Predicted Probabilities </span>");
+    $('#ProbOther-annot').html("<span class='info-label'>Other</span>" + "<span>" + (data.prob_non_proro).toPrecision(3) + "</span>");
+    $('#ProbProro-annot').html("<span class='info-label'>Prorocentrum</span>" + "<hspan>" + (data.prob_proro).toPrecision(3) + "</hspan>");
 };
 
 function showImageDetailAnnot(data) {
