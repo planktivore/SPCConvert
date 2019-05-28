@@ -314,6 +314,12 @@ function buildAnnotMosaic(imageItems) {
     };
     
     // Delegate mouse click event to image items
+    $('.image-item').on('click', SuryasFunction)
+
+    function SuryasFunction() {
+        console.log("yay")
+    }
+
     $('.image-item').on('mouseenter', function(e) {
 
         imageData = this.data;
