@@ -328,19 +328,20 @@ function buildAnnotMosaic(imageItems) {
     // Delegate mouse click event to image items
     $('.image-item').on('click', SuryasFunction)
 
-    function SuryasFunction() {
-        console.log("yay")
+    function SuryasFunction(event) {
+
+        
 
         // add borders and update incorrect stats
-        if (this.hasClass("red-border")) {
-            this.removeClass("red-border");
+        if ($(this).hasClass("red-border")) {
+            $(this).removeClass("red-border");
             incorrectCount -= 1;
-            index = incorrectCount.indexOf(this.data.image_url)
+            index = correctDict.indexOf(this.data.image_url)
             array.splice(index, 1);
             
         }
         else {
-            this.addClass("red-border");
+            $(this).addClass("red-border");
             incorrectCount += 1;
             correctDict.push(this.data.image_url);
         }
@@ -364,7 +365,6 @@ function buildAnnotMosaic(imageItems) {
         imageData.prob_non_proro = this.data.prob_non_proro;
         imageData.prob_proro = this.data.prob_proro;
 
-        console.log("clicked")
         // show image detail
         showImageDetailAnnot(imageData);
 
@@ -432,5 +432,8 @@ function setGtruth() {
         curr.update({gtruth: !val});
     }
     
-
 }
+
+$("#annot-sub").on("click", setGtruth);
+
+
