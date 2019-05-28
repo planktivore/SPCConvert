@@ -1,6 +1,7 @@
 
 var incorrectCount = 0;
 var correctDict = [];
+var currClass = 0;
 
 $('.progress').fadeOut(1);
 
@@ -276,12 +277,14 @@ new Chart(document.getElementById("doughnut-chart"), {
 }
 
 // filter by class label
-function createAnnotMosaic(event) {
+function createAnnotMosaic() {
 
     // create the Mosaic
     if(document.getElementById("class-drop").value == "Prorocentrum"){
+        currClass = 1;
         populateMos(1);
     } else {
+        currClass = 0;
         populateMos(0);
     }
 }
@@ -290,7 +293,7 @@ function createAnnotMosaic(event) {
 function populateMos(label) {
 
     // query for all images with pred = label
-    imgItems = roistore({pred:{is:label}}).order("height desc").get();
+    imgItems = roistore({pred:{is:label}}).order("prob_non_proro desc").get();
 
     // update counters
 
@@ -330,20 +333,17 @@ function buildAnnotMosaic(imageItems) {
 
     function SuryasFunction(event) {
 
-        
-
         // add borders and update incorrect stats
         if ($(this).hasClass("red-border")) {
             $(this).removeClass("red-border");
             incorrectCount -= 1;
             index = correctDict.indexOf(this.data.image_url)
-            array.splice(index, 1);
-            
+            Array.splice(index, 1);      
         }
         else {
             $(this).addClass("red-border");
             incorrectCount += 1;
-            correctDict.push(this.data.image_url);
+            correctDict.push(this.data.image_url + ".jpeg");
         }
     }
 
@@ -426,12 +426,19 @@ function showImageDetailAnnot(data) {
 
 function setGtruth() {
 
+    console.log(correctDict);
+
     for (var i = 0; i < correctDict.length; i++) {
-        var curr = roistore({url: correctDict[i]});
-        var val = curr.select(pred)[0];
-        curr.update({gtruth: !val});
+        roistore({url: correctDict}).update({gtruth: !currClass});
+        roistore({url: correctDict}).update({pred: !currClass});
     }
     
+    // rerender 
+    populateMos(currClass);
+
+    // write to file
+    // $.post("save.php", { "db": roistore});
+
 }
 
 $("#annot-sub").on("click", setGtruth);
