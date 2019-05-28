@@ -37,6 +37,7 @@ def updateDB(db_path, json_path):
 		entry["pred"] = url_to_label[filename]['pred']
 		entry["prob_non_proro"] = url_to_label[filename]['prob'][0]
 		entry["prob_proro"] = url_to_label[filename]['prob'][1]
+		entry["gtruth"] = url_to_label[filename]['pred']
 
 	# write a new db from the db template with the updated list
 	db_str = json.dumps(entries)
