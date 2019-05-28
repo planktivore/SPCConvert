@@ -289,6 +289,11 @@ function populateMos(label) {
     // query for all images with pred = label
     imgItems = roistore({pred:{is:label}}).order("height desc").get();
 
+    // update counters
+
+    $("#num-incorrect").text("0/" + imgItems.length);
+    $("#num-annot").text("0/" + imgItems.length);
+
     // display imgItems
     buildAnnotMosaic(imgItems);
 }
