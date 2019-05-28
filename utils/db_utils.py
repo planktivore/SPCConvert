@@ -35,7 +35,7 @@ def to_json_format(str_db):
 
     str_db = str_db[:ind_brac]
     ind_last_comma = len(str_db) - 2
-    st_db = str_db[:ind_last_comma - 1] + str_db[ind_last_comma:]
+    str_db = str_db[:ind_last_comma - 1] + str_db[ind_last_comma:]
     return json.loads(str_db)
 
 def to_spc_csv(db, csv_fname='database.csv'):
