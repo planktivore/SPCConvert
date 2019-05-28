@@ -409,11 +409,12 @@ function showImageDetailAnnot(data) {
 
 };
 
+
+// console.log(roistore());
+
 function setGtruth() {
     var all_rows = roistore();
     console.log(all_rows);
-
-
 
     // cities({name:"New York"}).update({state:"NY"});
 

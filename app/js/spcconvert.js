@@ -1,6 +1,6 @@
 
 var incorrectCount = 0;
-var correctDict = {};
+var correctDict = [];
 
 $('.progress').fadeOut(1);
 
@@ -331,12 +331,14 @@ function buildAnnotMosaic(imageItems) {
         if (this.hasClass("red-border")) {
             this.removeClass("red-border");
             incorrectCount -= 1;
-            correctDict[this.data.image_url.split("/").slice(-1)[0]] = 0;
+            index = incorrectCount.indexOf(this.data.image_url)
+            array.splice(index, 1);
+            
         }
         else {
             this.addClass("red-border");
             incorrectCount += 1;
-            correctDict[this.data.image_url.split("/").slice(-1)[0]] = 1;
+            correctDict.push(this.data.image_url);
         }
     }
 
@@ -413,11 +415,12 @@ function showImageDetailAnnot(data) {
 // console.log(roistore());
 
 function setGtruth() {
-    var all_rows = roistore();
-    console.log(all_rows);
 
-
-
-    // cities({name:"New York"}).update({state:"NY"});
+    for (var i = 0; i < correctDict.length; i++) {
+        var curr = roistore({url: correctDict[i]});
+        var val = curr.select(pred)[0];
+        curr.update({gtruth: !val});
+    }
+    
 
 }
