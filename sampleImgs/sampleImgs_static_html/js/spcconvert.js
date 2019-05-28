@@ -1,4 +1,7 @@
 
+var incorrectCount = 0;
+var correctDict = {};
+
 $('.progress').fadeOut(1);
 
 // Debouncer to throttle event triggers
@@ -323,6 +326,18 @@ function buildAnnotMosaic(imageItems) {
 
     function SuryasFunction() {
         console.log("yay")
+
+        // add borders and update incorrect stats
+        if (this.hasClass("red-border")) {
+            this.removeClass("red-border");
+            incorrectCount -= 1;
+            correctDict[this.data.image_url.split("/").slice(-1)[0]] = 0;
+        }
+        else {
+            this.addClass("red-border");
+            incorrectCount += 1;
+            correctDict[this.data.image_url.split("/").slice(-1)[0]] = 1;
+        }
     }
 
     $('.image-item').on('mouseenter', function(e) {
@@ -393,3 +408,14 @@ function showImageDetailAnnot(data) {
     $(window).resize(debouncer (function() { return updateDetailImageAnnot(data);}));
 
 };
+
+
+// console.log(roistore());
+
+function setGtruth() {
+    var all_rows = roistore();
+    console.log(all_rows);
+
+    // cities({name:"New York"}).update({state:"NY"});
+
+}

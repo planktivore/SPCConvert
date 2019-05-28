@@ -1,4 +1,7 @@
 
+var incorrectCount = 0;
+var correctDict = [];
+
 $('.progress').fadeOut(1);
 
 // Debouncer to throttle event triggers
@@ -327,6 +330,20 @@ function buildAnnotMosaic(imageItems) {
 
     function SuryasFunction() {
         console.log("yay")
+
+        // add borders and update incorrect stats
+        if (this.hasClass("red-border")) {
+            this.removeClass("red-border");
+            incorrectCount -= 1;
+            index = incorrectCount.indexOf(this.data.image_url)
+            array.splice(index, 1);
+            
+        }
+        else {
+            this.addClass("red-border");
+            incorrectCount += 1;
+            correctDict.push(this.data.image_url);
+        }
     }
 
     $('.image-item').on('mouseenter', function(e) {
@@ -403,3 +420,17 @@ function showImageDetailAnnot(data) {
     $(window).resize(debouncer (function() { return updateDetailImageAnnot(data);}));
 
 };
+
+
+// console.log(roistore());
+
+function setGtruth() {
+
+    for (var i = 0; i < correctDict.length; i++) {
+        var curr = roistore({url: correctDict[i]});
+        var val = curr.select(pred)[0];
+        curr.update({gtruth: !val});
+    }
+    
+
+}
