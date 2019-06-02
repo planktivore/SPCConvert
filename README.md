@@ -102,3 +102,25 @@ There are a few settings that need to be adjusted to use with a different camera
 4. Handling bad images, images that are too large or small
 
 * Contact Paul Roberts (plroberts@ucsd.edu) for information about contributing code, bugs, and all things SPC related.
+
+
+### Annotation Tool Guide ###
+
+To successfully annotate the images follow these steps. [args]
+
+1. Generate static html by executing spcconvert.py [image dir]
+2. Make sure that the predictions.json file is in the img_dir_static_html folder with server.py
+3. Add predictions to the static html by running addPredictions.py [html_path] [json_path] [database.js path]
+4. run server.py from the static_html directory
+5. go to 127.0.0.1:5000 on the browser to use the annotation tool
+
+In the annotate tab:
+1. select the class of images to annotate from the dropbox. 
+2. Hover over an image to see details.
+3. Click on an image to indicate that the image is incorrectly classified by the CNN. 
+4. Click on submit to save the images ground truth values
+
+Minor Features left
+
+Update counts
+Validation tool
