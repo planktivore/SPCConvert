@@ -2,7 +2,6 @@
 """
 spcconvert - batch conversion and webpage building for SPC images
 
-
 """
 
 import cvtools
@@ -195,7 +194,7 @@ def run(data_path,cfg):
     subdir = os.path.join(data_path,'..',base_dir_name + '_static_html')
     if not os.path.exists(subdir):
         os.makedirs(subdir)
-    image_dir = os.path.join(subdir,'images')
+    image_dir = os.path.join(subdir,'static/images')
     if not os.path.exists(image_dir):
         os.makedirs(image_dir)
 
@@ -386,10 +385,20 @@ def run(data_path,cfg):
 
     print ("Building web app...")
 
+    try:
+        os.mkdir(os.path.join(subdir, "templates"))
+        os.mkdir(os.path.join(subdir, "static"))
+    except OSError:
+        print("directory already existed")
+
     # Load html template for rendering
     template = ""
-    with open(os.path.join('app','index.html'),"r") as fconv:
+    with open(os.path.join('app','templates/index.html'),"r") as fconv:
         template = fconv.read()
+
+    server = ""
+    with open(os.path.join('app','server.py'),"r") as fconv:
+        server = fconv.read()
 
     # Define the render context from the processed histograms, images, and stats
     context = {}
@@ -448,21 +457,27 @@ def run(data_path,cfg):
     # render the html page and save to disk
     page = pystache.render(template,context)
 
-    with open(os.path.join(subdir,'spcdata.html'),"w") as fconv:
+
+    with open(os.path.join(subdir,'templates/spcdata.html'),"w") as fconv:
         fconv.write(page)
+
+    with open(os.path.join(subdir,'server.py'),"w") as fconv:
+        fconv.write(server)
+
 
     # remove any old app files and try to copy over new ones
     try:
-        shutil.rmtree(os.path.join(subdir,"css"),ignore_errors=True)
-        shutil.copytree("app/css",os.path.join(subdir,"css"))
-        shutil.rmtree(os.path.join(subdir,"js"),ignore_errors=True)
-        shutil.copytree("app/js",os.path.join(subdir,"js"))
+        shutil.rmtree(os.path.join(subdir,"static/css"),ignore_errors=True)
+        shutil.copytree("app/static/css",os.path.join(subdir,"static/css"))
+        shutil.rmtree(os.path.join(subdir,"static/js"),ignore_errors=True)
+        shutil.copytree("app/static/js",os.path.join(subdir,"static/js"))
     except:
         print ("Error copying supporting files for html.")
 
     # Load roistore.js database for rendering
+
     template = ""
-    with open(os.path.join('app','js','database-template.js'),"r") as fconv:
+    with open(os.path.join('app','static/js','database-template.js'),"r") as fconv:
         template = fconv.read()
 
     context = {}
@@ -472,7 +487,7 @@ def run(data_path,cfg):
     # render the javascript page and save to disk
     page = pystache.render(template,context)
 
-    with open(os.path.join(subdir,'js','database.js'),"w") as fconv:
+    with open(os.path.join(subdir,'static/js','database.js'),"w") as fconv:
         fconv.write(page)
 
     print ("Done.")
