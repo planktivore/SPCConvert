@@ -8,3 +8,5 @@
 \.idea/
 
 test_scripts\.py
+.DS_Store
+sampleImgs/.DS_Store
