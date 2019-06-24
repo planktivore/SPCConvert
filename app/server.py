@@ -11,10 +11,6 @@ app = Flask(__name__)
 def home():
     return render_template('spcdata.html')
 
-@app.route("/output")
-def output():
-    return "test!!"
-
 @app.route("/save_gtruth", methods = ['POST'])
 def save():
 

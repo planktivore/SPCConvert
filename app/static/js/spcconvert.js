@@ -426,8 +426,8 @@ function showImageDetailAnnot(data) {
 function setGtruth() {
 
     for (var i = 0; i < correctDict.length; i++) {
-        roistore({url: correctDict}).update({gtruth: !currClass});
-        roistore({url: correctDict}).update({pred: !currClass});
+        roistore({url: correctDict}).update({gtruth: currClass == 1 ? 0 : 1});
+        roistore({url: correctDict}).update({pred: currClass == 1 ? 0 : 1});
     }
     
     // rerender
