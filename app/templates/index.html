@@ -124,17 +124,44 @@
                     <div class="tool-pane">
                         <ul class="nav nav-pills">
                             <li class="nav-pill" id="class-filt">Label: <input type="text" id="class-drop" list="classes" onchange="createAnnotMosaic()"></li>
-                                                        <datalist id=classes>
+                                                        <datalist id="classes">
                                                             <option value="Prorocentrum">
                                 <option value="Other">
                             </datalist>
-                            <li class="nav-pill" id="num-incorrect"> 0/0</li>
-                            <li class="nav-pill" id="num-annot"> 0/0</li>
                             <li class="nav-pill" id="annot-sub" class="button">Submit </li>
                         </ul>
                     </div>
                     <div id="MosaicContainer-annot"> 
 
+                    </div>
+                    <div id="annot-step-2" style="display: none">
+                      <img id="annot-img" />
+                      <div id="annot-sidebar">
+                      </div>
+                      Class: <input type="text" id="annot-class-drop" list="annot-classes">
+                      <datalist id="annot-classes">
+                        <option value="1" />
+                        <option value="2" />
+                        <option value="3" />
+                        <option value="4" />
+                        <option value="5" />
+                        <option value="6" />
+                        <option value="7" />
+                        <option value="8" />
+                        <option value="9" />
+                        <option value="10" />
+                        <option value="11" />
+                        <option value="12" />
+                        <option value="13" />
+                        <option value="14" />
+                        <option value="15" />
+                        <option value="16" />
+                        <option value="17" />
+                        <option value="18" />
+                        <option value="19" />
+                        <option value="20" />
+                      </datalist>
+                      <div id="next-btn">Next Image</div>
                     </div>
                     <div id="info-sidebar"> 
                         <div id="ImageContainer-annot">

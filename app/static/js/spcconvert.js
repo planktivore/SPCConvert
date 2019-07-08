@@ -1,7 +1,9 @@
 
 var incorrectCount = 0;
-var correctDict = [];
+var incorrectArr = [];
 var currClass = 0;
+var annot_iter = 0;
+var labels = [];
 
 $('.progress').fadeOut(1);
 
@@ -337,13 +339,13 @@ function buildAnnotMosaic(imageItems) {
         if ($(this).hasClass("red-border")) {
             $(this).removeClass("red-border");
             incorrectCount -= 1;
-            index = correctDict.indexOf(this.data.image_url)
-            Array.splice(index, 1);      
+            index = incorrectArr.indexOf(this.data.image_url + ".jpeg")
+            incorrectArr = incorrectArr.splice(index, 1);      
         }
         else {
             $(this).addClass("red-border");
             incorrectCount += 1;
-            correctDict.push(this.data.image_url + ".jpeg");
+            incorrectArr.push(this.data.image_url + ".jpeg");
         }
     }
 
@@ -351,7 +353,7 @@ function buildAnnotMosaic(imageItems) {
 
         imageData = this.data;
         imageData.image_url = this.data.url.replace(/\.[^/.]+$/, ""); // remove extension
-        imageData.image_id = imageData.image_url.split("/").slice(-1)[0]
+        imageData.image_id = imageData.image_url.split("/").slice(-1)[0];
         imageData.image_width = this.data.width;
         imageData.image_height = this.data.height;
         imageData.major_axis_length = this.data.major_axis_length;
@@ -415,21 +417,20 @@ function showImageDetailAnnot(data) {
     // Otherwise show image detail
     //var data = this.roi_data;
     siteURL = '';
-    var base_url = siteURL+data.image_url;
+    var base_url = siteURL + data.image_url;
     updateDetailImageAnnot(data);
     $(window).resize(debouncer (function() { return updateDetailImageAnnot(data);}));
 
 };
 
 
-// console.log(roistore());
+// Update database, re-render interface, send post to server
 function setGtruth() {
 
-    for (var i = 0; i < correctDict.length; i++) {
-        roistore({url: correctDict}).update({gtruth: currClass == 1 ? 0 : 1});
-        roistore({url: correctDict}).update({pred: currClass == 1 ? 0 : 1});
+    for(let i = 0; i < incorrectArr.length; i++) {
+        roistore({url: incorrectArr[i]}).update({gtruth: labels[i]});
+        roistore({url: incorrectArr[i]}).update({pred: currClass == 1 ? 0 : 1});
     }
-    
     // rerender
     populateMos(currClass);
 
@@ -442,5 +443,59 @@ function setGtruth() {
 
 }
 
+// show incorrect image indexed at img_i
+function showImg(img_i) {
+    // insert image
+    $("#annot-img").attr("src", "static/" + incorrectArr[img_i]);
+    
+    // populate information
+    img = roistore({url: incorrectArr[img_i]}).get();
 
-$("#annot-sub").on("click", setGtruth);
+    // Compute Image size from ImageDetail Container
+    var aspectRatio = img.image_height/img.image_width;
+    var heightScale = $('#annot-img').height()/img.image_height;
+    var widthScale = $('#annot-img').width()/data.image_width;
+    if (data.image_width*heightScale > 0.6*$('#annot-img').width()) {
+        // Scale Image by width
+        $('#TargetImg').width(0.6*$('#annot-img').width());
+        $('#TargetImg').height(0.6*$('#annot-img').width()*aspectRatio);
+    }
+    else {
+        $('#TargetImg').height(0.75*$('#annot-img').height());
+        $('#TargetImg').width(0.75*$('#annot-img').height()/aspectRatio);
+    }
+
+    
+}
+
+// handle transition from intial labelling to annotating
+// 20 classes
+function showFirstImg() {
+
+    // toggle to new view
+    $("#MosaicContainer-annot").toggle();
+    $("#annot-step-2").toggle();
+
+    showImg(0);
+}
+
+// save label, and go to next image
+function nextImg() {
+
+    // save label
+    labels[annot_iter] = $("#annot-class-drop").val();
+
+    // show next image
+    annot_iter++;
+    if(annot_iter < incorrectArr.length) {
+        showImg(annot_iter);
+    } else {
+        setGtruth();
+        // toggle to old view
+        $("#MosaicContainer-annot").toggle();
+        $("#annot-step-2").toggle();
+    }
+}
+
+$("#next-btn").on("click", nextImg);
+$("#annot-sub").on("click", showFirstImg);
