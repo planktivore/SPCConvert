@@ -205,12 +205,12 @@ img #TargetImage {
   padding: 20px;
   position: fixed;
   right: 0;
-  top: 75;
+  top: 125;
 }
 
 #MosaicContainer-annot {
   float: left;
-  width: 1200px;
+  width: 1000px;
 }
 
 #num-incorrect {
@@ -219,4 +219,23 @@ img #TargetImage {
 
 .red-border {
   border: 1px solid red;
+}
+
+#annot-step-2 {
+  margin-left: 10px;
+}
+
+#next-btn {
+  display: inline-block;
+  border: 1px solid grey;
+  padding: 5px;
+  margin: 10px;
+  background-color: green;
+  color: white;
+}
+
+#annot-img {
+  margin-left: 100px;
+  margin-top: 50px;
+  margin-bottom: 25px;
 }
