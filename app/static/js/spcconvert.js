@@ -446,25 +446,40 @@ function setGtruth() {
 // show incorrect image indexed at img_i
 function showImg(img_i) {
     // insert image
+    console.log(incorrectArr[img_i]);
     $("#annot-img").attr("src", "static/" + incorrectArr[img_i]);
     
     // populate information
     img = roistore({url: incorrectArr[img_i]}).get();
+    img = img[0];
 
     // Compute Image size from ImageDetail Container
     var aspectRatio = img.image_height/img.image_width;
     var heightScale = $('#annot-img').height()/img.image_height;
-    var widthScale = $('#annot-img').width()/data.image_width;
-    if (data.image_width*heightScale > 0.6*$('#annot-img').width()) {
+    var widthScale = $('#annot-img').width()/img.image_width;
+    if (img.image_width*heightScale > 0.6*$('#TargetImg-annot').width()) {
         // Scale Image by width
-        $('#TargetImg').width(0.6*$('#annot-img').width());
-        $('#TargetImg').height(0.6*$('#annot-img').width()*aspectRatio);
+        $('#TargetImg-annot').width(0.6*$('#TargetImg-annot').width());
+        $('#TargetImg-annot').height(0.6*$('#TargetImg-annot').width()*aspectRatio);
     }
     else {
-        $('#TargetImg').height(0.75*$('#annot-img').height());
-        $('#TargetImg').width(0.75*$('#annot-img').height()/aspectRatio);
+        $('#TargetImg-annot').height(0.75*$('#TargetImg-annot').height());
+        $('#TargetImg-annot').width(0.75*$('#TargetImg-annot').height()/aspectRatio);
     }
 
+    $('#TargetImg-annot').attr("src", "static/" +incorrectArr[img_i]);
+    $('#ImageDetailTitle-annot').html(incorrectArr[img_i]);
+    $('#ImageName-annot').html("<span class='info-label'>Image ID</span>" + "<span>" + img.image_id + "</span>");
+    $('#Timestamp-annot').html("<span class='info-label'>Collection Datetime</span>" + "<span>" + img.image_timestamp + "</span>");
+    // Info
+    var classes = {};
+    classes[0] = "Other";
+    classes[1] = "Prorocentrum";
+    $('#gtruth-lbl-annot').html("<span class='info-label'>Gtruth </span>" + "<span>" + "None" + " </span>");
+    $('#pred-lbl-annot').html("<span class='info-label'>Predicted Class </span>" + "<span>" + classes[img.pred] + " </span>");
+    $('#PredictedProb-annot').html("<span class='info-label'>Predicted Probabilities </span>");
+    $('#ProbOther-annot').html("<span class='info-label'>Other</span>" + "<span>" + (img.prob_non_proro).toPrecision(3) + "</span>");
+    $('#ProbProro-annot').html("<span class='info-label'>Prorocentrum</span>" + "<hspan>" + (img.prob_proro).toPrecision(3) + "</hspan>");
     
 }
 
@@ -489,11 +504,16 @@ function nextImg() {
     annot_iter++;
     if(annot_iter < incorrectArr.length) {
         showImg(annot_iter);
+    } else if(annot_iter == incorrectArr.length - 1 ){
+        $("#next-btn").css("background-color", "red")
+        $("#next-btn").html("Finish");
     } else {
         setGtruth();
         // toggle to old view
         $("#MosaicContainer-annot").toggle();
         $("#annot-step-2").toggle();
+        $("#next-btn").html("Next Image");
+        $("#next-btn").css("background-color", "green");
 
         // Empty the incorrect arr, and labels
         incorrectArr = [];
