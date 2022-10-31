@@ -541,7 +541,26 @@ if __name__ == '__main__':
             if os.path.isfile(data_path):
                 extracted_path = data_path + "_unpacked"
                 with tarfile.open(data_path) as archive:
-                    archive.extractall(path=extracted_path)
+                    def is_within_directory(directory, target):
+                        
+                        abs_directory = os.path.abspath(directory)
+                        abs_target = os.path.abspath(target)
+                    
+                        prefix = os.path.commonprefix([abs_directory, abs_target])
+                        
+                        return prefix == abs_directory
+                    
+                    def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+                    
+                        for member in tar.getmembers():
+                            member_path = os.path.join(path, member.name)
+                            if not is_within_directory(path, member_path):
+                                raise Exception("Attempted Path Traversal in Tar File")
+                    
+                        tar.extractall(path, members, numeric_owner=numeric_owner) 
+                        
+                    
+                    safe_extract(archive, path=extracted_path)
                 data_path = extracted_path
                 to_clean = extracted_path
 
